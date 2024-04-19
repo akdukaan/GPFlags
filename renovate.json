@@ -1,0 +1,12 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base"
+  ],
+  "prHourlyLimit": 15,
+  "schedule": [
+    "after 1pm every friday",
+    "before 7pm every friday",
+    "every weekend"
+  ]
+}
