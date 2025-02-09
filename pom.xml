@@ -6,7 +6,7 @@
 
     <groupId>me.ryanhamshire</groupId>
     <artifactId>GPFlags</artifactId>
-    <version>5.13.7</version>
+    <version>5.13.7.${build.number}</version>
 
     <properties>
 <!--        this is the real java version used for compilation-->
