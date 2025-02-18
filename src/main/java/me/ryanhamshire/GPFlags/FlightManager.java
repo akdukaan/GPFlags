@@ -160,7 +160,7 @@ public class FlightManager implements Listener {
      * @param claim Claim at location. Helpful in case a claim is being deleted
      * @return
      */
-    private static Boolean gpfAllowsFlight(Player player, Location location, Claim claim) {
+    public static Boolean gpfAllowsFlight(Player player, Location location, Claim claim) {
         boolean manageFlight = gpfManagesFlight(player);
         if (manageFlight) {
             if (FlagDef_OwnerMemberFly.letPlayerFly(player, location, claim)) {
