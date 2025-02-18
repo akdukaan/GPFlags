@@ -10,12 +10,16 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommandYamlParser;
 import org.bukkit.command.TabExecutor;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.bukkit.Bukkit.getName;
 
 public class CommandGPFlags implements TabExecutor {
     @Override
@@ -39,6 +43,20 @@ public class CommandGPFlags implements TabExecutor {
             MessagingUtil.sendMessage(commandSender, "<gold>Server version: <yellow>" + Bukkit.getServer().getName() + " " + Bukkit.getServer().getVersion());
             MessagingUtil.sendMessage(commandSender, "<gold>GP version: <yellow>" + GriefPrevention.instance.getDescription().getVersion());
             MessagingUtil.sendMessage(commandSender, "<gold>GPF version: <yellow>" + GPFlags.getInstance().getDescription().getVersion());
+
+            // Check other plugins hooking into GPFlags or GriefPrevention
+            List<String> relatedPlugins = new ArrayList<>();
+            for (Plugin plugin : Bukkit.getPluginManager().getPlugins()) {
+                PluginDescriptionFile desc = plugin.getDescription();
+                List<String> dependencies = new ArrayList<>();
+                dependencies.addAll(desc.getDepend());
+                dependencies.addAll(desc.getSoftDepend());
+                if (dependencies.contains("GPFlags") || dependencies.contains("GriefPrevention") ) {
+                    relatedPlugins.add(plugin.getName());
+                }
+            }
+            relatedPlugins.remove("GPFlags");
+            MessagingUtil.sendMessage(commandSender, "<gold>Dependent plugins: <yellow>" + String.join(" ", relatedPlugins));
             return true;
         }
 
