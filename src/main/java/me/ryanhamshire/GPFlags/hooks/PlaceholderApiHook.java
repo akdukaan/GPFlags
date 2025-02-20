@@ -97,11 +97,9 @@ public class PlaceholderApiHook extends PlaceholderExpansion {
         if (identifier.startsWith("isflagactive_")) {
             PlayerData playerData = GriefPrevention.instance.dataStore.getPlayerData(player.getUniqueId());
             Claim claim = GriefPrevention.instance.dataStore.getClaimAt(player.getLocation(), false, playerData.lastClaim);
-            if (claim != null) {
-                Flag flag = plugin.getFlagManager().getEffectiveFlag(player.getLocation(), flagName, claim);
-                if (flag == null) return "No";
-                return "Yes";
-            }
+            Flag flag = plugin.getFlagManager().getEffectiveFlag(player.getLocation(), flagName, claim);
+            if (flag == null) return "No";
+            return "Yes";
         }
         return null;
     }
