@@ -6,6 +6,7 @@ import java.util.logging.Level;
 import com.google.common.collect.ImmutableMap;
 import me.ryanhamshire.GPFlags.commands.*;
 import me.ryanhamshire.GPFlags.flags.FlagDefinition;
+import me.ryanhamshire.GPFlags.hooks.PlaceholderApiHook;
 import me.ryanhamshire.GPFlags.listener.*;
 import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
@@ -77,6 +78,10 @@ public class GPFlags extends JavaPlugin {
         getCommand("bulkunsetflag").setExecutor(new CommandBulkUnsetFlag());
 
         UpdateChecker.run(this, "gpflags");
+
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            new PlaceholderApiHook(this).register();
+        }
 
         try {
             addCustomMetrics();

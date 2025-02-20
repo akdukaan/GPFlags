@@ -46,7 +46,7 @@ public class CommandSetClaimFlag implements TabExecutor {
         }
 
         // Check perms for that specific flag
-        if (!player.hasPermission("gpflags.flag." + def.getName())) {
+        if (!player.hasPermission("gpflags.flag." + flagName)) {
             MessagingUtil.sendMessage(player, TextMode.Err, Messages.NoFlagPermission, flagName);
             return true;
         }
@@ -111,7 +111,7 @@ public class CommandSetClaimFlag implements TabExecutor {
             }
         }
 
-        // If they are trying to use subcdivisions with an old GP version, deny it.
+        // If they are trying to use subdivisions with an old GP version, deny it.
         Long claimID = claim.getID();
         if (claimID == null || claimID == -1) {
             MessagingUtil.sendMessage(player, TextMode.Err, Messages.UpdateGPForSubdivisionFlags);
