@@ -16,6 +16,7 @@ import org.bukkit.entity.Vehicle;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDismountEvent;
 import org.bukkit.event.entity.EntityMountEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
@@ -69,6 +70,22 @@ public class PlayerListener implements Listener {
         Location from = player.getLocation();
         Location to = event.getMount().getLocation();
         Set<Player> group = Util.getMovementGroup(player);
+        if (flagsPreventMovement(to, from, group)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    private void onDismount(EntityDismountEvent event) {
+        Entity entity = event.getEntity();
+        if (!(entity instanceof Player)) return;
+        Player player = (Player) entity;
+        Location from = player.getLocation();
+        Location to = event.getDismounted().getLocation();
+        Set<Player> group = Util.getMovementGroup(player);
+        System.out.println("from: " + from.getBlockZ());
+        System.out.println("to: " + to.getBlockZ());
+
         if (flagsPreventMovement(to, from, group)) {
             event.setCancelled(true);
         }
