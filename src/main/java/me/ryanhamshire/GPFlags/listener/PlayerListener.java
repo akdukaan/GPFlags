@@ -16,6 +16,7 @@ import org.bukkit.entity.Vehicle;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityMountEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 
@@ -60,18 +61,29 @@ public class PlayerListener implements Listener {
         }
     }
 
-    @EventHandler
-    private void onMount(VehicleEnterEvent event) {
-        if (event.isCancelled()) return;
+    @EventHandler(ignoreCancelled = true)
+    private void onMount(EntityMountEvent event) {
+        Entity entity = event.getEntity();
+        if (!(entity instanceof Player)) return;
+        Player player = (Player) entity;
+        Location from = player.getLocation();
+        Location to = event.getMount().getLocation();
+        Set<Player> group = Util.getMovementGroup(player);
+        if (flagsPreventMovement(to, from, group)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    private void onEnterVehicle(VehicleEnterEvent event) {
         Entity entity = event.getEntered();
         Vehicle vehicle = event.getVehicle();
-        if (entity instanceof Player) {
-            Player player = ((Player) entity);
-            Location from = player.getLocation();
-            Location to = vehicle.getLocation();
-            if (flagsPreventMovement(to, from, Set.of(player))) {
-                event.setCancelled(true);
-            }
+        if (!(entity instanceof Player)) return;
+        Player player = ((Player) entity);
+        Location from = player.getLocation();
+        Location to = vehicle.getLocation();
+        if (flagsPreventMovement(to, from, Set.of(player))) {
+            event.setCancelled(true);
         }
     }
 
