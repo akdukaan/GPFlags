@@ -76,19 +76,6 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true)
-    private void onDismount(EntityDismountEvent event) {
-        Entity entity = event.getEntity();
-        if (!(entity instanceof Player)) return;
-        Player player = (Player) entity;
-        Location from = player.getLocation();
-        Location to = event.getDismounted().getLocation();
-        Set<Player> group = Util.getMovementGroup(player);
-        if (flagsPreventMovement(to, from, group)) {
-            event.setCancelled(true);
-        }
-    }
-
-    @EventHandler(ignoreCancelled = true)
     private void onEnterVehicle(VehicleEnterEvent event) {
         Entity entity = event.getEntered();
         Vehicle vehicle = event.getVehicle();
