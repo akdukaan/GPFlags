@@ -83,9 +83,6 @@ public class PlayerListener implements Listener {
         Location from = player.getLocation();
         Location to = event.getDismounted().getLocation();
         Set<Player> group = Util.getMovementGroup(player);
-        System.out.println("from: " + from.getBlockZ());
-        System.out.println("to: " + to.getBlockZ());
-
         if (flagsPreventMovement(to, from, group)) {
             event.setCancelled(true);
         }
