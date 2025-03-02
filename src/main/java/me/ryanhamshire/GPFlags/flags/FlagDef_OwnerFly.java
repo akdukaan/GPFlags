@@ -47,7 +47,7 @@ public class FlagDef_OwnerFly extends FlagDefinition {
         if (claim == null) return false;
         Flag flag = GPFlags.getInstance().getFlagManager().getEffectiveFlag(location, "OwnerFly", claim);
         if (flag == null) return false;
-        return (claim.getOwnerID() == player.getUniqueId());
+        return (player.getUniqueId().equals(claim.getOwnerID()));
     }
 
     @Override
