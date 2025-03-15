@@ -320,6 +320,7 @@ public class FlagsDataStore {
         
         this.addDefault(defaults, Messages.EnableReadLecterns, "Players can now read (not manipulate) lecterns on your claim.", null);
         this.addDefault(defaults, Messages.DisableReadLecterns, "Players can no longer read lecterns on your claim", null);
+        this.addDefault(defaults, Messages.LecternOpened, "Lectern opened in view-only state", "A nonempty string must be provided or the flag wont work.");
 
         this.addDefault(defaults, Messages.EnableNoBlockGravity, "Disabling block gravity in this area.", null);
         this.addDefault(defaults, Messages.DisableNoBlockGravity, "Enabling block gravity in this area.", null);

@@ -58,7 +58,7 @@ public class FlagDef_ReadLecterns extends FlagDefinition {
         ItemStack book = lectern.getInventory().getItem(0);
         if (book == null) return;
 
-        event.setDenialReason(() -> "Lectern opened in view-only state");
+        event.setDenialReason(() -> GPFlags.getInstance().getFlagsDataStore().getMessage(Messages.LecternOpened));
 
         // If it's a book and quill, pretend it's signed
         if (book.getType() == Material.WRITABLE_BOOK) {

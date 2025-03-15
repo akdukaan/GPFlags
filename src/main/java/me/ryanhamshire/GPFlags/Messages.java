@@ -184,6 +184,7 @@ public enum Messages {
     DisableViewContainers,
     EnableReadLecterns,
     DisableReadLecterns,
+    LecternOpened,
     EnableNoBlockGravity,
     DisableNoBlockGravity,
     EnableNoBlockForm,
