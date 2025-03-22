@@ -1,14 +1,9 @@
 package me.ryanhamshire.GPFlags.flags;
 
 import me.ryanhamshire.GPFlags.*;
-import me.ryanhamshire.GriefPrevention.Claim;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Silverfish;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
-
-import java.util.Arrays;
-import java.util.List;
 
 public class FlagDef_AllowInfest extends FlagDefinition {
 
