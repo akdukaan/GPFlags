@@ -1,1 +1,3 @@
 See the readme on [Modrinth](https://modrinth.com/plugin/gpflags/).
+
+This branch was made to try to make ChangeBiome restore biome after unset, and it works, but also it lags out the server. Not a fan of this flag. Need to remove this flag. Or at least docuent that it can lag and not to be given to untrusted members. Keeping this branch here just in case I need to look back on it for something maybe. 
