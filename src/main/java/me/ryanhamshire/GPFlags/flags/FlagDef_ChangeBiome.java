@@ -1,5 +1,18 @@
 package me.ryanhamshire.GPFlags.flags;
 
+import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.WorldEditException;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.extent.AbstractDelegateExtent;
+import com.sk89q.worldedit.extent.Extent;
+import com.sk89q.worldedit.function.operation.Operations;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.regions.CuboidRegion;
+import com.sk89q.worldedit.regions.Region;
+import com.sk89q.worldedit.world.RegenOptions;
+import com.sk89q.worldedit.world.biome.BiomeType;
+import com.sk89q.worldedit.world.block.BlockStateHolder;
 import me.ryanhamshire.GPFlags.*;
 import me.ryanhamshire.GPFlags.hooks.WorldEditHook;
 import me.ryanhamshire.GPFlags.util.MessagingUtil;
@@ -24,6 +37,7 @@ public class FlagDef_ChangeBiome extends FlagDefinition {
 
     /**
      * Runs the other changeBiome and then refreshes chunks in the claim
+     * TODO Hook into worldEdit. It knows what it's doing better
      * @param claim
      * @param biome
      */
@@ -114,8 +128,35 @@ public class FlagDef_ChangeBiome extends FlagDefinition {
         return true;
     }
 
-    public void resetBiome(Claim claim) {
-        WorldEditHook.resetBiomes(claim);
+    public static void resetBiome(Claim claim) {
+        Location greaterCorner = claim.getGreaterBoundaryCorner();
+        greaterCorner.setY(Util.getMaxHeight(greaterCorner));
+        Location lesserCorner = claim.getLesserBoundaryCorner();
+
+        Region region = new CuboidRegion(
+                BukkitAdapter.asBlockVector(lesserCorner),
+                BukkitAdapter.asBlockVector(greaterCorner)
+        );
+        com.sk89q.worldedit.world.World weWorld = BukkitAdapter.adapt(lesserCorner.getWorld());
+
+        try (EditSession editSession = WorldEdit.getInstance().newEditSession(weWorld)) {
+
+            // Create a custom extent that doesn't set blocks
+            Extent biomeOnlyExtent = new AbstractDelegateExtent(editSession) {
+                @Override
+                public <T extends BlockStateHolder<T>> boolean setBlock(BlockVector3 location, T block) {
+                    // Prevent block changes
+                    return false;
+                }
+            };
+
+            RegenOptions options = RegenOptions.builder().regenBiomes(true).build();
+            weWorld.regenerate(region, biomeOnlyExtent, options);
+            Operations.complete(editSession.commit());
+
+        } catch (WorldEditException e) {
+            e.printStackTrace();
+        }
     }
 
     @EventHandler
