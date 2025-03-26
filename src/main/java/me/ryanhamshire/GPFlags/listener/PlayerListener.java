@@ -86,7 +86,7 @@ public class PlayerListener implements Listener {
         Player player = ((Player) entity);
         Location from = player.getLocation();
         Location to = vehicle.getLocation();
-        if (flagsPreventMovement(to, from, Set.of(player))) {
+        if (flagsPreventMovement(to, from, player)) {
             event.setCancelled(true);
         }
     }
@@ -96,7 +96,7 @@ public class PlayerListener implements Listener {
         Player player = event.getPlayer();
         Location from = player.getLocation();
         Location to = event.getBed().getLocation();
-        if (flagsPreventMovement(to, from, Set.of(player))) {
+        if (flagsPreventMovement(to, from, player)) {
             event.setCancelled(true);
         }
     }
@@ -107,7 +107,7 @@ public class PlayerListener implements Listener {
         Location from = player.getLocation();
         Bukkit.getScheduler().runTaskLater(GPFlags.getInstance(), () -> {
             Location to = player.getLocation();
-            if (flagsPreventMovement(to, from, Set.of(player))) {
+            if (flagsPreventMovement(to, from, player)) {
                 player.teleport(from.add(0, 1, 0));
             }
         }, 1);
@@ -141,6 +141,10 @@ public class PlayerListener implements Listener {
         Claim claim = GriefPrevention.instance.dataStore.getClaimAt(spawn,false, cachedClaim);
         PlayerPostClaimBorderEvent borderEvent = new PlayerPostClaimBorderEvent(event.getPlayer(), null, claim, null, spawn);
         Bukkit.getPluginManager().callEvent(borderEvent);
+    }
+
+    public static boolean flagsPreventMovement(Location to, Location from, Player player) {
+        return flagsPreventMovement(to, from, Set.of(player));
     }
 
     /**
