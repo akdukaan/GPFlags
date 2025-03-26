@@ -65,7 +65,7 @@ public class CommandUnsetClaimFlag implements TabExecutor {
 
         if (flagName.equalsIgnoreCase("ChangeBiome")) {
             FlagDef_ChangeBiome flagD = ((FlagDef_ChangeBiome) plugin.getFlagManager().getFlagDefinitionByName("changebiome"));
-//            flagD.resetBiome(claim);
+            flagD.resetBiome(claim);
         }
 
         SetFlagResult result = plugin.getFlagManager().unSetFlag(claimID.toString(), def);

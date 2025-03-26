@@ -1,7 +1,7 @@
 name: GPFlags
 main: me.ryanhamshire.GPFlags.GPFlags
 depend: [GriefPrevention]
-softdepend: [mcMMO, Vault, MythicMobs, EliteMobs, PlaceholderAPI]
+softdepend: [mcMMO, Vault, MythicMobs, EliteMobs, PlaceholderAPI, WorldEdit]
 authors: [Big_Scary, ShaneBee, DmitryRendov, DrBot]
 description: GriefPrevention add-on to set flags in claims.
 website: https://modrinth.com/plugin/gpflags
