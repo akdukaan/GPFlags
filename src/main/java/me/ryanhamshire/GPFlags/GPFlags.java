@@ -6,6 +6,8 @@ import java.util.logging.Level;
 import com.google.common.collect.ImmutableMap;
 import me.ryanhamshire.GPFlags.commands.*;
 import me.ryanhamshire.GPFlags.flags.FlagDefinition;
+import me.ryanhamshire.GPFlags.gui.ChatListener;
+import me.ryanhamshire.GPFlags.gui.FlagGUI;
 import me.ryanhamshire.GPFlags.hooks.PlaceholderApiHook;
 import me.ryanhamshire.GPFlags.listener.*;
 import me.ryanhamshire.GPFlags.util.MessagingUtil;
@@ -34,6 +36,7 @@ public class GPFlags extends JavaPlugin {
     public BukkitAudiences adventure;
     boolean registeredFlagDefinitions = false;
     private PlayerListener playerListener;
+    private FlagGUI flagGUI;
 
     public void onEnable() {
         long start = System.currentTimeMillis();
@@ -76,6 +79,12 @@ public class GPFlags extends JavaPlugin {
         getCommand("unsetworldflag").setExecutor(new CommandUnsetWorldFlag());
         getCommand("bulksetflag").setExecutor(new CommandBulkSetFlag());
         getCommand("bulkunsetflag").setExecutor(new CommandBulkUnsetFlag());
+        // Register GUI command
+        getCommand("flagsgui").setExecutor(new CommandFlagsGUI());
+
+        // Initialiseer de GUI en ChatListener
+        this.flagGUI = new FlagGUI(this);
+        Bukkit.getPluginManager().registerEvents(new ChatListener(), this);
 
         UpdateChecker.run(this, "gpflags");
 
@@ -105,6 +114,7 @@ public class GPFlags extends JavaPlugin {
         }
         instance = null;
         playerListener = null;
+        flagGUI = null;
     }
 
     public @NonNull BukkitAudiences getAdventure() {
@@ -156,6 +166,15 @@ public class GPFlags extends JavaPlugin {
      */
     public WorldSettingsManager getWorldSettingsManager() {
         return this.worldSettingsManager;
+    }
+    
+    /**
+     * Get the FlagGUI instance
+     * 
+     * @return The FlagGUI instance
+     */
+    public FlagGUI getFlagGUI() {
+        return this.flagGUI;
     }
 
     private void addCustomMetrics() {
