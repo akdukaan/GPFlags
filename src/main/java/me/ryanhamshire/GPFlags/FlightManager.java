@@ -94,7 +94,7 @@ public class FlightManager implements Listener {
         EntityDamageEvent.DamageCause cause = e.getCause();
         if (cause != EntityDamageEvent.DamageCause.FALL) return;
         if (!fallImmune.contains(p)) return;
-        e.setDamage(0);
+        e.setCancelled(true);
         fallImmune.remove(p);
     }
 
