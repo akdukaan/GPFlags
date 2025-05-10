@@ -35,9 +35,14 @@ public class FlagDef_InfiniteArrows extends FlagDefinition {
         if (!(projectile instanceof Arrow)) return;
         Arrow arrow = (Arrow) projectile;
 
-        event.setConsumeArrow(false);
+        try {
+            event.setConsumeArrow(false);
+        } catch (NoSuchMethodError error) {
+            event.setConsumeItem(false);
+        }
         player.updateInventory();
         arrow.setPickupStatus(AbstractArrow.PickupStatus.DISALLOWED);
+
     }
 
     @Override
