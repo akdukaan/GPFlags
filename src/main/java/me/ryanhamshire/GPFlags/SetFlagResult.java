@@ -2,8 +2,8 @@ package me.ryanhamshire.GPFlags;
 
 public class SetFlagResult {
 
-    boolean success;
-    MessageSpecifier message;
+    public boolean success;
+    public MessageSpecifier message;
 
     public SetFlagResult(boolean success, MessageSpecifier message) {
         this.success = success;
