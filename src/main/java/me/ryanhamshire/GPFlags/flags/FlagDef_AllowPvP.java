@@ -11,7 +11,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.CrossbowMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -320,6 +319,11 @@ public class FlagDef_AllowPvP extends PlayerMovementFlagDefinition {
     @Override
     public MessageSpecifier getUnSetMessage() {
         return new MessageSpecifier(Messages.RemoveEnabledPvP);
+    }
+
+    @Override
+    public List<FlagType> getFlagType() {
+        return Arrays.asList(FlagType.CLAIM, FlagType.DEFAULT, FlagType.WORLD, FlagType.SERVER);
     }
 
 }
