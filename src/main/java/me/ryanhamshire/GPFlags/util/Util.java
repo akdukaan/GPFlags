@@ -289,13 +289,18 @@ public class Util {
         if (!vehicle.isValid()) {
             return;
         }
-        ArrayList<ItemStack> drops = getDrops(vehicle);
         World world = vehicle.getWorld();
         vehicle.eject();
-        vehicle.remove();
-        for (ItemStack stack : drops) {
-            world.dropItem(location, stack);
+        if (vehicle instanceof Mob) {
+            vehicle.teleport(location);
+        } else {
+            vehicle.remove();
+            ArrayList<ItemStack> drops = getDrops(vehicle);
+            for (ItemStack stack : drops) {
+                world.dropItem(location, stack);
+            }
         }
+
     }
 
     /**
