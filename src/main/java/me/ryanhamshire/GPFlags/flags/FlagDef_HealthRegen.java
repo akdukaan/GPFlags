@@ -30,7 +30,7 @@ public class FlagDef_HealthRegen extends TimedPlayerFlagDefinition {
 
     @Override
     public void processPlayer(Player player) {
-        if (player.getHealth() >= player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() || player.isDead())
+        if (player.getHealth() >= player.getAttribute(Attribute.MAX_HEALTH).getValue() || player.isDead())
             return;
 
         Flag flag = this.getFlagInstanceAtLocation(player.getLocation(), player);
@@ -46,7 +46,7 @@ public class FlagDef_HealthRegen extends TimedPlayerFlagDefinition {
         }
 
         int newHealth = healAmount + (int) player.getHealth();
-        player.setHealth(Math.min(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue(), newHealth));
+        player.setHealth(Math.min(player.getAttribute(Attribute.MAX_HEALTH).getValue(), newHealth));
     }
 
     @Override
