@@ -216,8 +216,14 @@ public class FlightManager implements Listener {
         boolean manageFlight = gpfManagesFlight(player);
         if (!manageFlight) return;
         
-        if (FlagDef_OwnerMemberFly.letPlayerFly(player, location, claim)) return;
-        if (FlagDef_OwnerFly.letPlayerFly(player, location, claim)) return;
+        if (FlagDef_OwnerMemberFly.letPlayerFly(player, location, claim)) {
+            turnOnFlight(player);
+            return;
+        }
+        if (FlagDef_OwnerFly.letPlayerFly(player, location, claim)) {
+            turnOnFlight(player);
+            return;
+        }
         
         if (!FlagDef_NoFlight.letPlayerFly(player, location, claim)) {
             turnOffFlight(player);
