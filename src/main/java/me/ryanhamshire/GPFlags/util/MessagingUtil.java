@@ -7,6 +7,7 @@ import me.ryanhamshire.GPFlags.hooks.PlaceholderApiHook;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -44,8 +45,19 @@ public class MessagingUtil {
             message = PlaceholderApiHook.addPlaceholders(player, message);
         } catch (Throwable ignored) {}
         message = message.replace(COLOR_CHAR, '&');
-        Component component = MiniMessage.miniMessage().deserialize(message);
-        GPFlags.getInstance().getAdventure().player(player).sendMessage(component);
+        if (message.isEmpty()) return;
+
+        try {
+            Class.forName("net.kyori.adventure.text.minimessage.MiniMessage");
+            Component component = MiniMessage.miniMessage().deserialize(message);
+            player.sendMessage(component);
+        } catch (ClassNotFoundException e) {
+            for (String part : message.split("\n")) {
+                part = ChatColor.translateAlternateColorCodes('&', part);
+                if (ChatColor.stripColor(part).isEmpty()) return;
+                player.sendMessage(part);
+            }
+        }
     }
 
     private static void logToConsole(String message) {
@@ -58,8 +70,19 @@ public class MessagingUtil {
             message = PlaceholderApiHook.addPlaceholders(player, message);
         } catch (Throwable ignored) {}
         message = message.replace(COLOR_CHAR, '&');
-        Component component = MiniMessage.miniMessage().deserialize(message);
-        GPFlags.getInstance().getAdventure().player(player).sendActionBar(component);
+        if (message.isEmpty()) return;
+
+        try {
+            Class.forName("net.kyori.adventure.text.minimessage.MiniMessage");
+            Component component = MiniMessage.miniMessage().deserialize(message);
+            player.sendActionBar(component);
+        } catch (ClassNotFoundException e) {
+            for (String part : message.split("\n")) {
+                part = ChatColor.translateAlternateColorCodes('&', part);
+                if (ChatColor.stripColor(part).isEmpty()) return;
+                player.sendActionBar(part);
+            }
+        }
     }
 
     public static void logFlagCommands(String log) {

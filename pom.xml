@@ -119,16 +119,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>net.kyori</groupId>
-            <artifactId>adventure-text-minimessage</artifactId>
-            <version>4.16.0</version>
-        </dependency>
-        <dependency>
-            <groupId>net.kyori</groupId>
-            <artifactId>adventure-platform-bukkit</artifactId>
-            <version>4.3.3</version>
-        </dependency>
-        <dependency>
             <groupId>org.bstats</groupId>
             <artifactId>bstats-bukkit</artifactId>
             <version>3.0.2</version>
@@ -189,18 +179,6 @@
                         <configuration>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                             <relocations>
-                                <relocation>
-                                    <pattern>net.kyori.adventure</pattern>
-                                    <shadedPattern>me.ryanhamshire.GPFlags.libs.kyori.adventure</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>net.kyori.examination</pattern>
-                                    <shadedPattern>me.ryanhamshire.GPFlags.libs.kyori.examination</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>net.kyori.option</pattern>
-                                    <shadedPattern>me.ryanhamshire.GPFlags.libs.kyori.option</shadedPattern>
-                                </relocation>
                                 <relocation>
                                     <pattern>org.bstats</pattern>
                                     <shadedPattern>me.ryanhamshire.GPFlags.libs.bstats</shadedPattern>
