@@ -53,6 +53,10 @@ public class GPFlags extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new ClaimTransferListener(), this);
         Bukkit.getPluginManager().registerEvents(new FlightManager(), this);
 
+        if (Bukkit.getPluginManager().getPlugin("BetterReload") != null) {
+            Bukkit.getPluginManager().registerEvents(new ReloadListener(), this);
+        }
+
         this.flagsDataStore = new FlagsDataStore();
         reloadConfig();
 

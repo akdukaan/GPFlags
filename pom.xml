@@ -29,7 +29,7 @@
             <id>CodeMC</id>
             <url>https://repo.codemc.org/repository/maven-public</url>
         </repository>
-        <!-- GriefPrevention Repo -->
+        <!-- GriefPrevention and BetterReload Repo -->
         <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
@@ -123,6 +123,12 @@
             <artifactId>bstats-bukkit</artifactId>
             <version>3.0.2</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.amnoah.betterreload</groupId>
+            <artifactId>api</artifactId>
+            <version>v1.0.0</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
