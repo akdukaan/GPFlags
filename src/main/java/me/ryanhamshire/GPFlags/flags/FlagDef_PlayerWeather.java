@@ -9,10 +9,11 @@ import me.ryanhamshire.GPFlags.SetFlagResult;
 import me.ryanhamshire.GriefPrevention.Claim;
 import org.bukkit.Location;
 import org.bukkit.WeatherType;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class FlagDef_PlayerWeather extends PlayerMovementFlagDefinition implements Listener {
 
@@ -21,18 +22,19 @@ public class FlagDef_PlayerWeather extends PlayerMovementFlagDefinition implemen
     }
 
     @Override
-    public void onChangeClaim(Player player, Location lastLocation, Location to, Claim claimFrom, Claim claimTo) {
-        if (lastLocation == null) return;
-        Flag flag = this.getFlagInstanceAtLocation(to, player);
-        if (flag == null) {
-            if (this.getFlagInstanceAtLocation(lastLocation, player) != null) {
-                player.resetPlayerWeather();
-            }
+    public void onChangeClaim(Player player, Location from, Location to, Claim claimFrom, Claim claimTo, @Nullable Flag flagFrom, @Nullable Flag flagTo) {
+        // Reset the weather if moving from enabled to disabled
+        if (flagTo == null && flagFrom != null) {
+            player.resetPlayerWeather();
             return;
         }
 
-        if (flag == this.getFlagInstanceAtLocation(lastLocation, player)) return;
+        // Set weather to new flag if exists
+        if (flagTo == null) return;
+        setPlayerWeather(player, flagTo);
+    }
 
+    public void setPlayerWeather(Player player, @NotNull Flag flag) {
         String weather = flag.parameters;
         if (weather.equalsIgnoreCase("sun")) {
             player.setPlayerWeather(WeatherType.CLEAR);
@@ -41,23 +43,8 @@ public class FlagDef_PlayerWeather extends PlayerMovementFlagDefinition implemen
         }
     }
 
-    @EventHandler
-    public void onJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-        Flag flag = this.getFlagInstanceAtLocation(player.getLocation(), player);
-
-        if (flag != null) {
-            String weather = flag.parameters;
-            if (weather.equalsIgnoreCase("sun")) {
-                player.setPlayerWeather(WeatherType.CLEAR);
-            } else if (weather.equalsIgnoreCase("rain")) {
-                player.setPlayerWeather(WeatherType.DOWNFALL);
-            }
-        }
-    }
-
     @Override
-    public SetFlagResult validateParameters(String parameters) {
+    public SetFlagResult validateParameters(String parameters, CommandSender sender) {
         if (parameters.isEmpty()) {
             return new SetFlagResult(false, new MessageSpecifier(Messages.PlayerWeatherRequired));
         }

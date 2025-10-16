@@ -64,9 +64,4 @@ public class FlagDef_NoMcMMOSkills extends FlagDefinition {
         return new MessageSpecifier(Messages.DisableNoMcMMOSkills);
     }
 
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.WORLD, FlagType.SERVER);
-    }
-
 }

@@ -6,6 +6,7 @@ import me.ryanhamshire.GPFlags.GPFlags;
 import me.ryanhamshire.GPFlags.MessageSpecifier;
 import me.ryanhamshire.GPFlags.Messages;
 import me.ryanhamshire.GPFlags.TextMode;
+import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import me.ryanhamshire.GPFlags.util.Util;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
@@ -14,6 +15,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.raid.RaidTriggerEvent;
 import org.bukkit.potion.PotionEffectType;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -33,7 +35,7 @@ public class FlagDef_RaidMemberOnly extends FlagDefinition {
         if (!Util.canAccess(claim, player)) {
             event.setCancelled(true);
             player.removePotionEffect(PotionEffectType.BAD_OMEN);
-            Util.sendClaimMessage(player, TextMode.Warn, Messages.RaidMemberOnlyDeny);
+            MessagingUtil.sendMessage(player, TextMode.Warn, Messages.RaidMemberOnlyDeny);
         }
     }
 
@@ -54,7 +56,7 @@ public class FlagDef_RaidMemberOnly extends FlagDefinition {
 
     @Override
     public List<FlagType> getFlagType() {
-        return Collections.singletonList(FlagType.CLAIM);
+        return Arrays.asList(FlagType.CLAIM, FlagType.DEFAULT);
     }
 
 }

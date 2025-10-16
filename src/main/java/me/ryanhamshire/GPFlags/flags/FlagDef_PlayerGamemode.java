@@ -1,25 +1,21 @@
 package me.ryanhamshire.GPFlags.flags;
 
 
-import me.ryanhamshire.GPFlags.Flag;
-import me.ryanhamshire.GPFlags.FlagManager;
-import me.ryanhamshire.GPFlags.GPFlags;
-import me.ryanhamshire.GPFlags.MessageSpecifier;
-import me.ryanhamshire.GPFlags.Messages;
-import me.ryanhamshire.GPFlags.SetFlagResult;
-import me.ryanhamshire.GPFlags.TextMode;
-import me.ryanhamshire.GPFlags.WorldSettings;
+import me.ryanhamshire.GPFlags.*;
+import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import me.ryanhamshire.GPFlags.util.Util;
 import me.ryanhamshire.GriefPrevention.Claim;
+import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.jetbrains.annotations.Nullable;
 
 public class FlagDef_PlayerGamemode extends PlayerMovementFlagDefinition implements Listener {
 
@@ -28,50 +24,39 @@ public class FlagDef_PlayerGamemode extends PlayerMovementFlagDefinition impleme
     }
 
     @Override
-    public void onChangeClaim(Player player, Location lastLocation, Location to, Claim claimFrom, Claim claimTo) {
+    public void onChangeClaim(Player player, Location lastLocation, Location to, Claim claimFrom, Claim claimTo, @Nullable Flag flagFrom, @Nullable Flag flagTo) {
         WorldSettings settings = this.settingsManager.get(player.getWorld());
 
-        if (lastLocation == null) return;
-        Flag flag = this.getFlagInstanceAtLocation(to, player);
-        if (flag == null) {
-            if (this.getFlagInstanceAtLocation(lastLocation, player) == null) return;
+        if (Util.shouldBypass(player, claimTo, this.getName())) return;
 
-            String gameMode = settings.worldGamemodeDefault;
-            player.setGameMode(GameMode.valueOf(gameMode.toUpperCase()));
-            Util.sendMessage(player, TextMode.Warn, Messages.PlayerGamemode, gameMode);
+        if (flagTo == null) { // moving from something to null
+
+            String defaultGamemode = settings.worldGamemodeDefault;
+            changeGamemode(player, defaultGamemode, true);
 
             if (player.getGameMode() != GameMode.CREATIVE && player.getGameMode() != GameMode.SPECTATOR) {
                 Block block = player.getLocation().getBlock();
-                Block below = block.getRelative(BlockFace.DOWN);
-                if (below.getRelative(BlockFace.DOWN).getType() != Material.AIR && block.getRelative(BlockFace.UP).getType() == Material.AIR)
-                    return;
-                while (block.getY() > 2 && !block.getType().isSolid() && block.getType() != Material.WATER) {
-                    block = block.getRelative(BlockFace.DOWN);
-                }
-                player.teleport(block.getRelative(BlockFace.UP).getLocation());
+                Block fallTo = FlightManager.getFloor(block.getRelative(BlockFace.DOWN));
+                player.teleport(fallTo.getRelative(BlockFace.UP).getLocation());
             }
             return;
         }
-        if (flag == this.getFlagInstanceAtLocation(lastLocation, player)) return;
-        String gameMode = flag.parameters;
-        String playerGameMode = player.getGameMode().toString();
-        if (gameMode.equalsIgnoreCase(playerGameMode)) return;
-        player.setGameMode(GameMode.valueOf(gameMode.toUpperCase()));
-        Util.sendMessage(player, TextMode.Warn, Messages.PlayerGamemode, gameMode);
+        // Moving from either null to something OR something to something
+        String newGamemode = flagTo.parameters;
+        String oldGamemode = player.getGameMode().toString();
+        if (newGamemode.equalsIgnoreCase(oldGamemode)) return;
+        changeGamemode(player, newGamemode, true);
     }
 
-    @EventHandler
-    public void onJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-        Flag flag = this.getFlagInstanceAtLocation(player.getLocation(), player);
-        if (flag != null) {
-            String gameMode = flag.parameters;
-            player.setGameMode(GameMode.valueOf(gameMode.toUpperCase()));
+    public void changeGamemode(Player player, String gamemode, boolean sendMessage) {
+        player.setGameMode(GameMode.valueOf(gamemode.toUpperCase()));
+        if (sendMessage) {
+            MessagingUtil.sendMessage(player, TextMode.Warn, Messages.PlayerGamemode, gamemode);
         }
     }
 
     @Override
-    public SetFlagResult validateParameters(String parameters) {
+    public SetFlagResult validateParameters(String parameters, CommandSender sender) {
         if (parameters.isEmpty()) {
             return new SetFlagResult(false, new MessageSpecifier(Messages.PlayerGamemodeRequired));
         }

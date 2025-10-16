@@ -1,18 +1,15 @@
 package me.ryanhamshire.GPFlags.flags;
 
 import me.ryanhamshire.GPFlags.*;
+import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import me.ryanhamshire.GPFlags.util.Util;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockSpreadEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.ItemStack;
 
 import java.util.Arrays;
 import java.util.List;
@@ -39,7 +36,7 @@ public class FlagDef_NoMapMaking extends FlagDefinition {
         Claim claim = GriefPrevention.instance.dataStore.getClaimAt(player.getLocation(), false, null);
         if (Util.shouldBypass(player, claim, flag)) return;
 
-        Util.sendMessage(player, TextMode.Err, Messages.MapMakingDisabled);
+        MessagingUtil.sendMessage(player, TextMode.Err, Messages.MapMakingDisabled);
         event.setCancelled(true);
 
     }
@@ -57,11 +54,6 @@ public class FlagDef_NoMapMaking extends FlagDefinition {
     @Override
     public MessageSpecifier getUnSetMessage() {
         return new MessageSpecifier(Messages.DisableNoMapMaking);
-    }
-
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.WORLD, FlagType.SERVER);
     }
 
 }

@@ -1,12 +1,12 @@
 name: GPFlags
 main: me.ryanhamshire.GPFlags.GPFlags
 depend: [GriefPrevention]
-softdepend: [mcMMO, Vault, MythicMobs, EliteMobs]
+softdepend: [mcMMO, Vault, MythicMobs, EliteMobs, PlaceholderAPI]
 authors: [Big_Scary, ShaneBee, DmitryRendov, DrBot]
 description: GriefPrevention add-on to set flags in claims.
-website: https://www.spigotmc.org/resources/griefprevention-flags.55773/
+website: https://modrinth.com/plugin/gpflags
 version: '${project.version}'
-api-version: '1.13'
+api-version: '1.16'
 commands:
   gpflags:
     description: Reload or get help
@@ -51,7 +51,7 @@ commands:
     description: Lists all the flags currently set on a GriefPrevention land claim.
     usage: /ListClaimFlags
     aliases: [ listclaimflags, claimflags, listflags ]
-    permission: gpflags.command.listclaimflags
+    permission: gpflags.command.listclaimflags.use
   setworldflag:
     description: Sets a flag on an entire world.
     usage: /SetWorldFlag <world> <flag> <optional parameters>
@@ -88,6 +88,14 @@ commands:
     description: Buy the subclaim
     usage: /buysubclaim
     permission: gpflags.command.buysubclaim
+  bulksetflag:
+    description: Sets a flag for all of the player's claims
+    usage: /bulksetflag <player> <flag>
+    permission: gpflags.command.bulksetflag
+  bulkunsetflag:
+    description: Unsets a flag for all of the player's claims
+    usage: /bulkunsetflag <player> <flag>
+    permission: gpflags.command.bulkunsetflag
 permissions:
   gpflags.admin.*:
     description: Grants all administrative functionality. (depreciated)
@@ -148,7 +156,7 @@ permissions:
       description: Grants permission to use /ListClaimFlags. (depreciated)
       default: op
       children:
-        gpflags.command.listflags: true
+        gpflags.command.listclaimflags: true
   gpflags.reload:
       description: Grants permission to use /GPFReload. (depreciated)
       default: op
@@ -444,8 +452,50 @@ permissions:
     description: Grants permission to use /SetDefaultClaimFlag and /UnSetDefaultClaimFlag.
     default: op
   gpflags.command.listflags:
+    description: Grants permission to use /ListClaimFlags (deprecated).
+    default: op
+    children:
+      gpflags.command.listclaimflags: true
+  gpflags.command.listclaimflags:
     description: Grants permission to use /ListClaimFlags.
     default: op
+    children:
+      gpflags.command.listclaimflags.use: true
+  gpflags.command.listclaimflags.ownclaim:
+    description: Grants permission to use /ListClaimFlags in owned claims.
+    default: op
+    children:
+      gpflags.command.listclaimflags.use: true
+  gpflags.command.listclaimflags.nonclaim:
+    description: Grants permission to use /ListClaimFlags outside of claims.
+    default: op
+    children:
+      gpflags.command.listclaimflags.use: true
+  gpflags.command.listclaimflags.adminclaim:
+    description: Grants permission to use /ListClaimFlags in admin claims.
+    default: op
+    children:
+      gpflags.command.listclaimflags.use: true
+  gpflags.command.listclaimflags.manage:
+    description: Grants permission to use /ListClaimFlags in claims with manage trust.
+    default: op
+    children:
+      gpflags.command.listclaimflags.use: true
+  gpflags.command.listclaimflags.build:
+    description: Grants permission to use /ListClaimFlags in claims with build trust.
+    default: op
+    children:
+      gpflags.command.listclaimflags.use: true
+  gpflags.command.listclaimflags.inventory:
+    description: Grants permission to use /ListClaimFlags in claims with inventory trust.
+    default: op
+    children:
+      gpflags.command.listclaimflags.use: true
+  gpflags.command.listclaimflags.access:
+    description: Grants permission to use /ListClaimFlags in claims with accesstrust.
+    default: op
+    children:
+      gpflags.command.listclaimflags.use: true
   gpflags.command.reload:
     description: Grants permission to use /GPFlags reload.
     default: op

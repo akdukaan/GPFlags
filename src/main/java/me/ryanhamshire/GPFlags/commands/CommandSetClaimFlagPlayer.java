@@ -6,14 +6,12 @@ import me.ryanhamshire.GPFlags.SetFlagResult;
 import me.ryanhamshire.GPFlags.TextMode;
 import me.ryanhamshire.GPFlags.flags.FlagDef_ChangeBiome;
 import me.ryanhamshire.GPFlags.flags.FlagDefinition;
+import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import me.ryanhamshire.GPFlags.util.Util;
 import me.ryanhamshire.GriefPrevention.Claim;
-import me.ryanhamshire.GriefPrevention.ClaimPermission;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import me.ryanhamshire.GriefPrevention.PlayerData;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -28,19 +26,19 @@ public class CommandSetClaimFlagPlayer implements TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
         if (!commandSender.hasPermission("gpflags.command.setclaimflagplayer")) {
-            Util.sendMessage(commandSender, TextMode.Err, Messages.NoCommandPermission, command.toString());
+            MessagingUtil.sendMessage(commandSender, TextMode.Err, Messages.NoCommandPermission, command.toString());
             return true;
         }
         if (args.length < 2) return false;
         Player player = Bukkit.getPlayer(args[0]);
         if (player == null) {
-            Util.sendMessage(commandSender, "&c%s &7is not online", args[0]);
+            MessagingUtil.sendMessage(commandSender, "<red>"+args[0]+" <grey>is not online");
             return false;
         }
         PlayerData playerData = GriefPrevention.instance.dataStore.getPlayerData(player.getUniqueId());
         Claim claim = GriefPrevention.instance.dataStore.getClaimAt(player.getLocation(), false, playerData.lastClaim);
         if (claim == null || !Util.canBuild(claim, player)) {
-            Util.sendMessage(commandSender, "&cThis player is not standing in a claim they own");
+            MessagingUtil.sendMessage(commandSender, "<red>This player is not standing in a claim they own");
             return false;
         }
 
@@ -48,11 +46,11 @@ public class CommandSetClaimFlagPlayer implements TabExecutor {
         GPFlags gpflags = GPFlags.getInstance();
         FlagDefinition def = gpflags.getFlagManager().getFlagDefinitionByName(flagName);
         if (def == null) {
-            Util.sendMessage(commandSender, "&c%s&7 is not a valid flag", flagName);
+            MessagingUtil.sendMessage(commandSender, "<red>" + flagName + "<grey> is not a valid flag");
             return false;
         }
         if (!def.getFlagType().contains(FlagDefinition.FlagType.CLAIM)) {
-            Util.sendMessage(player, TextMode.Err, Messages.NoFlagInClaim);
+            MessagingUtil.sendMessage(player, TextMode.Err, Messages.NoFlagInClaim);
             return true;
         }
 
@@ -67,12 +65,12 @@ public class CommandSetClaimFlagPlayer implements TabExecutor {
             if (!flagD.changeBiome(commandSender, claim, biome)) return true;
         }
 
-        SetFlagResult result = gpflags.getFlagManager().setFlag(claim.getID().toString(), def, true, params);
-        ChatColor color = result.isSuccess() ? TextMode.Success : TextMode.Err;
-        Util.sendMessage(commandSender, color, result.getMessage().getMessageID(), result.getMessage().getMessageParams());
+        SetFlagResult result = gpflags.getFlagManager().setFlag(claim.getID().toString(), def, true, commandSender, params);
+        String color = result.isSuccess() ? TextMode.Success : TextMode.Err;
+        MessagingUtil.sendMessage(commandSender, color, result.getMessage().getMessageID(), result.getMessage().getMessageParams());
         if (result.isSuccess()) {
             gpflags.getFlagManager().save();
-            Util.sendMessage(commandSender, "&7Flag &b%s &7successfully set in &b%s&7's claim.", def.getName(), player.getName() );
+            MessagingUtil.sendMessage(commandSender, "<grey>Flag " + def.getName() + " <grey>successfully set in " + player.getName() + "<grey>'s claim." );
             return true;
         }
 

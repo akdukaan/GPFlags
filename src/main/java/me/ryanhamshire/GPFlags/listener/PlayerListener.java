@@ -1,7 +1,27 @@
 package me.ryanhamshire.GPFlags.listener;
 
-import me.ryanhamshire.GPFlags.Flag;
-import me.ryanhamshire.GPFlags.FlagManager;
+import java.util.ArrayList;
+import java.util.Set;
+
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Vehicle;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityMountEvent;
+import org.bukkit.event.player.PlayerBedEnterEvent;
+import org.bukkit.event.player.PlayerBedLeaveEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.vehicle.VehicleEnterEvent;
+import org.bukkit.event.vehicle.VehicleExitEvent;
+
+import me.ryanhamshire.GPFlags.FlightManager;
 import me.ryanhamshire.GPFlags.GPFlags;
 import me.ryanhamshire.GPFlags.event.PlayerPostClaimBorderEvent;
 import me.ryanhamshire.GPFlags.event.PlayerPreClaimBorderEvent;
@@ -10,159 +30,182 @@ import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.DataStore;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import me.ryanhamshire.GriefPrevention.events.ClaimDeletedEvent;
-import me.ryanhamshire.GriefPrevention.events.ClaimModifiedEvent;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Vehicle;
-import org.bukkit.event.Cancellable;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.event.vehicle.VehicleEnterEvent;
-import org.bukkit.event.vehicle.VehicleMoveEvent;
-import org.bukkit.inventory.ItemStack;
 
-import java.util.HashMap;
-
+/**
+ * Purpose is
+ */
 public class PlayerListener implements Listener {
 
-    private final HashMap<Player, Boolean> fallingPlayers = new HashMap<>();
     private static final DataStore dataStore = GriefPrevention.instance.dataStore;
-    private final FlagManager FLAG_MANAGER = GPFlags.getInstance().getFlagManager();
-
-    @EventHandler
-    private void onFall(EntityDamageEvent e) {
-        if (!(e.getEntity() instanceof Player)) return;
-        Player p = ((Player) e.getEntity());
-        EntityDamageEvent.DamageCause cause = e.getCause();
-        if (cause != EntityDamageEvent.DamageCause.FALL) return;
-        Boolean val = fallingPlayers.get(p);
-        if (val != null && val) {
-            e.setCancelled(true);
-            fallingPlayers.remove(p);
-        }
-    }
-
-    /**
-     * Add a player to prevent fall damage under certain conditions
-     *
-     * @param player Player to add
-     */
-    public void addFallingPlayer(Player player) {
-        this.fallingPlayers.put(player, true);
-    }
 
     @EventHandler(ignoreCancelled = true)
     private void onMove(PlayerMoveEvent event) {
         Location locTo = event.getTo();
         Location locFrom = event.getFrom();
         Player player = event.getPlayer();
-        processMovement(locTo, locFrom, player, event);
+
+        Set<Player> group = Util.getMovementGroup(player);
+        if (flagsPreventMovement(locTo, locFrom, group)) {
+            event.setCancelled(true);
+            if (player.isGliding()) {
+                player.setGliding(false);
+                FlightManager.considerForFallImmunity(player);
+            }
+            Entity vehicleEntity = player.getVehicle();
+            if (vehicleEntity instanceof Vehicle) {
+                Util.breakVehicle((Vehicle) player.getVehicle(), locFrom);
+            }
+        }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     private void onTeleport(PlayerTeleportEvent event) {
         Location locTo = event.getTo();
         Location locFrom = event.getFrom();
         Player player = event.getPlayer();
-        processMovement(locTo, locFrom, player, event);
-    }
-
-    @EventHandler
-    private void onVehicleMove(VehicleMoveEvent event) {
-        Location locTo = event.getTo();
-        Location locFrom = event.getFrom();
-        Vehicle vehicle = event.getVehicle();
-        for (Entity entity : vehicle.getPassengers()) {
-            if (entity instanceof Player) {
-                Player player = ((Player) entity);
-                if (!processMovement(locTo, locFrom, player, null)) {
-                    vehicle.eject();
-                    ItemStack itemStack = Util.getItemFromVehicle(vehicle);
-                    if (itemStack != null) {
-                        vehicle.getWorld().dropItem(locFrom, itemStack);
-                    }
-                    vehicle.remove();
-                    player.teleport(locFrom);
-                }
-            }
+        Set<Player> group = Util.getMovementGroup(player);
+        if (flagsPreventMovement(locTo, locFrom, group)) {
+            event.setCancelled(true);
         }
     }
 
-    @EventHandler
-    private void onMount(VehicleEnterEvent event) {
+    @EventHandler(ignoreCancelled = true)
+    private void onMount(EntityMountEvent event) {
+        Entity entity = event.getEntity();
+        if (!(entity instanceof Player)) return;
+        Player player = (Player) entity;
+        Location from = player.getLocation();
+        Location to = event.getMount().getLocation();
+        Set<Player> group = Util.getMovementGroup(player);
+        if (flagsPreventMovement(to, from, group)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    private void onEnterVehicle(VehicleEnterEvent event) {
         Entity entity = event.getEntered();
         Vehicle vehicle = event.getVehicle();
-        if (entity instanceof Player) {
-            Player player = ((Player) entity);
-            Location from = player.getLocation();
-            Location to = vehicle.getLocation();
-            processMovement(to, from, player, event);
+        if (!(entity instanceof Player)) return;
+        Player player = ((Player) entity);
+        Location from = player.getLocation();
+        Location to = vehicle.getLocation();
+        if (flagsPreventMovement(to, from, player)) {
+            event.setCancelled(true);
         }
     }
+    
+    @EventHandler(ignoreCancelled = true)
+    private void onExitVehicle(VehicleExitEvent event) {
 
-    public static boolean processMovement(Location locTo, Location locFrom, Player player, Cancellable event) {
-        if (locTo.getBlockX() == locFrom.getBlockX() && locTo.getBlockY() == locFrom.getBlockY() && locTo.getBlockZ() == locFrom.getBlockZ())
-            return true;
-        Location locFrom2 = locFrom.clone();
-        int maxWorldHeightFrom = Util.getMaxHeight(locFrom2);
-        if (locFrom2.getY() >= maxWorldHeightFrom) {
-            locFrom2.setY(maxWorldHeightFrom - 1);
-        }
-        Location locTo2 = locTo.clone();
-        int maxWorldHeightTo = Util.getMaxHeight(locTo2);
-        if (locTo2.getY() >= maxWorldHeightTo) {
-            locTo2.setY(maxWorldHeightTo - 1);
-        }
-        Claim claimTo = dataStore.getClaimAt(locTo2, false, null);
-        Claim claimFrom = dataStore.getClaimAt(locFrom2, false, null);
-        if (claimTo == claimFrom) return true;
-        PlayerPreClaimBorderEvent playerPreClaimBorderEvent = new PlayerPreClaimBorderEvent(player, claimFrom, claimTo, locFrom2, locTo2);
-        Bukkit.getPluginManager().callEvent(playerPreClaimBorderEvent);
-        if (!playerPreClaimBorderEvent.isCancelled()) {
-            Bukkit.getPluginManager().callEvent(new PlayerPostClaimBorderEvent(playerPreClaimBorderEvent));
-        }
-        if (event != null) {
-            event.setCancelled(playerPreClaimBorderEvent.isCancelled());
-        }
-        return !playerPreClaimBorderEvent.isCancelled();
+        // gets the player who is exiting the vehicle
+        if (!(event.getExited() instanceof Player)) return;
+        Player player = (Player) event.getExited();
+
+        // manage their flight
+        FlightManager.managePlayerFlight(player, null, player.getLocation());
     }
 
     @EventHandler
-    // Disable flight when a player deletes their claim
-    private void onDeleteClaim(ClaimDeletedEvent event) {
+    private void onEnterBed(PlayerBedEnterEvent event) {
+        Player player = event.getPlayer();
+        Location from = player.getLocation();
+        Location to = event.getBed().getLocation();
+        if (flagsPreventMovement(to, from, player)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    private void onLeaveBed(PlayerBedLeaveEvent event) {
+        Player player = event.getPlayer();
+        Location from = player.getLocation();
+        Bukkit.getScheduler().runTaskLater(GPFlags.getInstance(), () -> {
+            Location to = player.getLocation();
+            if (flagsPreventMovement(to, from, player)) {
+                player.teleport(from.add(0, 1, 0));
+            }
+        }, 1);
+    }
+
+    @EventHandler
+    private void onClaimDelete(ClaimDeletedEvent event) {
         Claim claim = event.getClaim();
-        World world = claim.getGreaterBoundaryCorner().getWorld();
-        Flag flagOwnerFly = FLAG_MANAGER.getFlag(claim, "OwnerFly");
-        Flag flagOwnerMemberFly = FLAG_MANAGER.getFlag(claim, "OwnerMemberFly");
-        assert world != null;
-        if (flagOwnerFly != null || flagOwnerMemberFly != null) {
-            for (Player player : world.getPlayers()) {
-                if (claim.contains(Util.getInBoundsLocation(player), false, true)) {
-                    Util.disableFlight(player);
-                }
-            }
+        for (Player player : Util.getPlayersIn(claim)) {
+            Location location = player.getLocation();
+            PlayerPostClaimBorderEvent borderEvent = new PlayerPostClaimBorderEvent(player, claim, claim.parent, location, location);
+            Bukkit.getPluginManager().callEvent(borderEvent);
         }
     }
 
     @EventHandler
-    private void onRespawnEvent(PlayerRespawnEvent event) {
-        Location loc = event.getRespawnLocation();
-        Claim claim = GriefPrevention.instance.dataStore.getClaimAt(loc, false, null);
-        if (claim != null) {
-            Flag flagOwnerFly = GPFlags.getInstance().getFlagManager().getFlag(claim, "OwnerFly");
-            Flag flagOwnerMemberFly = GPFlags.getInstance().getFlagManager().getFlag(claim, "OwnerMemberFly");
-            if (flagOwnerFly != null || flagOwnerMemberFly != null) {
-                return;
+    private void onLogin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+        Location spawn = player.getLocation();
+        Claim cachedClaim = dataStore.getPlayerData(player.getUniqueId()).lastClaim;
+        Claim claim = GriefPrevention.instance.dataStore.getClaimAt(spawn,false, cachedClaim);
+        PlayerPostClaimBorderEvent borderEvent = new PlayerPostClaimBorderEvent(event.getPlayer(), null, claim, null, spawn);
+        Bukkit.getPluginManager().callEvent(borderEvent);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    private void onRespawn(PlayerRespawnEvent event) {
+        Player player = event.getPlayer();
+        Location spawn = event.getRespawnLocation();
+        Claim cachedClaim = dataStore.getPlayerData(player.getUniqueId()).lastClaim;
+        Claim claim = GriefPrevention.instance.dataStore.getClaimAt(spawn,false, cachedClaim);
+        PlayerPostClaimBorderEvent borderEvent = new PlayerPostClaimBorderEvent(event.getPlayer(), null, claim, null, spawn);
+        Bukkit.getPluginManager().callEvent(borderEvent);
+    }
+
+    public static boolean flagsPreventMovement(Location to, Location from, Player player) {
+        return flagsPreventMovement(to, from, Set.of(player));
+    }
+
+    /**
+     * Takes in a movement and calls PreClaimBorderEvent if needed.
+     * If the event was allowed, will call PostClaimBorderEvent
+     * @param locTo
+     * @param locFrom
+     * @param players
+     * @return If the movement was prevented
+     */
+    public static boolean flagsPreventMovement(Location locTo, Location locFrom, Set<Player> players) {
+        if (locTo.getBlockX() == locFrom.getBlockX() &&
+                locTo.getBlockY() == locFrom.getBlockY() &&
+                locTo.getBlockZ() == locFrom.getBlockZ()) {
+            return false;
+        }
+
+        if (players.isEmpty()) return false;
+        Location locFromAdj = Util.getInBoundsLocation(locFrom);
+        Location locToAdj = Util.getInBoundsLocation(locTo);
+        Claim claimFrom = dataStore.getClaimAt(locFromAdj, false, null);
+        Claim claimTo = dataStore.getClaimAt(locToAdj, false, null);
+        if (claimTo == claimFrom) {
+            // If both claims exist and are the same, there's no context change
+            if (claimTo != null) {
+                return false;
+            }
+            // If both claims are null and are the same world, there's no context change
+            if (locFrom.getWorld() == locTo.getWorld()) {
+                return false;
             }
         }
-        Util.disableFlight(event.getPlayer());
+
+        // validate that the entire manifest is allowed to move to the location
+        ArrayList<PlayerPreClaimBorderEvent> events = new ArrayList<>();
+        for (Player passenger : players) {
+            PlayerPreClaimBorderEvent event = new PlayerPreClaimBorderEvent(passenger, claimFrom, claimTo, locFromAdj, locToAdj);
+            Bukkit.getPluginManager().callEvent(event);
+            if (event.isCancelled()) return true;
+            events.add(event);
+        }
+
+        // Now that we know everyone is allowed entry, lets call PlayerPostClaimBorderEvent
+        for (PlayerPreClaimBorderEvent event : events) {
+            Bukkit.getPluginManager().callEvent(new PlayerPostClaimBorderEvent(event));
+        }
+        return false;
     }
 }

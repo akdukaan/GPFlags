@@ -1,14 +1,12 @@
 package me.ryanhamshire.GPFlags.flags;
 
 import me.ryanhamshire.GPFlags.*;
+import me.ryanhamshire.GPFlags.util.Util;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
-
-import java.util.Arrays;
-import java.util.List;
 
 public class FlagDef_NoMobSpawns extends FlagDefinition {
 
@@ -22,9 +20,9 @@ public class FlagDef_NoMobSpawns extends FlagDefinition {
         if (type == EntityType.PLAYER || type == EntityType.ARMOR_STAND) return;
 
         SpawnReason reason = event.getSpawnReason();
+        if (reason == SpawnReason.SLIME_SPLIT) return;
         WorldSettings settings = this.settingsManager.get(event.getEntity().getWorld());
-        if (settings.noMonsterSpawnIgnoreSpawners && (reason == SpawnReason.SPAWNER || reason == SpawnReason.SPAWNER_EGG)) return;
-
+        if (settings.noMonsterSpawnIgnoreSpawners && Util.isSpawnerReason(reason)) return;
 
         Flag flag = this.getFlagInstanceAtLocation(event.getLocation(), null);
         if (flag == null) return;
@@ -47,8 +45,4 @@ public class FlagDef_NoMobSpawns extends FlagDefinition {
         return new MessageSpecifier(Messages.EnableMobSpawns);
     }
 
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.WORLD, FlagType.CLAIM, FlagType.SERVER);
-    }
 }

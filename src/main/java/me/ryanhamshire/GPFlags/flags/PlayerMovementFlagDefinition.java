@@ -1,5 +1,6 @@
 package me.ryanhamshire.GPFlags.flags;
 
+import me.ryanhamshire.GPFlags.Flag;
 import me.ryanhamshire.GPFlags.FlagManager;
 import me.ryanhamshire.GPFlags.GPFlags;
 import me.ryanhamshire.GPFlags.event.PlayerPostClaimBorderEvent;
@@ -10,7 +11,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -25,60 +30,54 @@ public abstract class PlayerMovementFlagDefinition extends FlagDefinition {
         super(manager, plugin);
     }
 
+    /**
+     * A slightly easier way for Movement flags to use PlayerPreClaimBorderEvent
+     * @param player
+     * @param from
+     * @param to
+     * @param claimFrom
+     * @param claimTo
+     * @return false if the flag denied entry or true if it allowed it.
+     */
     public boolean allowMovement(Player player, Location from, Location to, Claim claimFrom, Claim claimTo) {
         return true;
     }
 
     @EventHandler
-    public void onMove(PlayerPreClaimBorderEvent event) {
+    public void onPreMove(PlayerPreClaimBorderEvent event) {
         Player player = event.getPlayer();
-        Location from = event.getLocFrom().clone();
-        int fromMaxHeight = Util.getMaxHeight(from);
-        if (from.getY() > fromMaxHeight) {
-            from.setY(fromMaxHeight);
-        }
-        int fromMinHeight = Util.getMinHeight(from);
-        if (from.getY() < fromMinHeight) {
-            from.setY(fromMinHeight);
-        }
-        Location to = event.getLocTo().clone();
-        int toMaxHeight = Util.getMaxHeight(to);
-        if (to.getY() > toMaxHeight) {
-            to.setY(toMaxHeight);
-        }
-        int toMinHeight = Util.getMinHeight(to);
-        if (to.getY() < toMinHeight) {
-            to.setY(toMaxHeight);
-        }
+        Location from = event.getLocFrom();
+        Location to = event.getLocTo();
         Claim claimFrom = event.getClaimFrom();
         Claim claimTo = event.getClaimTo();
         if (!this.allowMovement(player, from, to, claimFrom, claimTo)) {
             event.setCancelled(true);
+            player.setVelocity(new Vector());
         }
     }
 
     @EventHandler
     public void onPostMove(PlayerPostClaimBorderEvent event) {
-        onChangeClaim(event.getPlayer(), event.getLocFrom(), event.getLocTo(), event.getClaimFrom(), event.getClaimTo());
+        Flag fromFlag = getEffectiveFlag(event.getClaimFrom(), event.getLocFrom());
+        Flag toFlag = getEffectiveFlag(event.getClaimTo(), event.getLocTo());
+        if (fromFlag == toFlag) return;
+        onChangeClaim(event.getPlayer(), event.getLocFrom(), event.getLocTo(), event.getClaimFrom(), event.getClaimTo(), fromFlag, toFlag);
     }
 
-    public void onChangeClaim(Player player, Location from, Location to, Claim claimFrom, Claim claimTo) {}
-
-    // This is being removed, but we are keeping it for a bit just in case
-    public void undoMovement(Player player, Location lastLocation) {
-        Bukkit.broadcastMessage("Undoing movement");
-        if (lastLocation != null) {
-            player.teleport(lastLocation);
-        } else if (player.getBedSpawnLocation() != null) {
-            player.teleport(player.getBedSpawnLocation());
-        } else {
-            player.teleport(player.getWorld().getSpawnLocation());
-        }
-    }
+    /**
+     * Called after a player has successfully moved from one region to another.
+     * Not called if the flags are the same due to like subclaims
+     * @param player
+     * @param from A bound-adjusted location or null if a login event
+     * @param to A bound-adjusted location
+     * @param claimFrom The claim that the player is coming from if one exists
+     * @param claimTo The claim that the player is now in if one exists
+     */
+    public void onChangeClaim(@NotNull Player player, @Nullable Location from, @NotNull Location to, @Nullable Claim claimFrom, @Nullable Claim claimTo, @Nullable Flag fromFlag, @Nullable Flag toFlag) {}
 
     @Override
     public List<FlagType> getFlagType() {
-        return Collections.singletonList(FlagType.CLAIM);
+        return Arrays.asList(FlagType.CLAIM, FlagType.DEFAULT);
     }
 
 }

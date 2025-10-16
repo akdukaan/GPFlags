@@ -1,25 +1,24 @@
 package me.ryanhamshire.GPFlags.listener;
 
 import io.papermc.paper.event.entity.EntityMoveEvent;
+import me.ryanhamshire.GPFlags.util.Util;
 import org.bukkit.Location;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
-import java.util.List;
+import java.util.Set;
 
 public class EntityMoveListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     private void onMove(EntityMoveEvent event) {
-        List<Entity> passengers = event.getEntity().getPassengers();
-        if (passengers.size() == 0) return;
-        Entity passenger = passengers.get(0);
-        if (!(passenger instanceof Player)) return;
-        Player rider = (Player) passenger;
+        // Check if it'll be allowed
+        Set<Player> group = Util.getMovementGroup(event.getEntity());
         Location locTo = event.getTo();
         Location locFrom = event.getFrom();
-        PlayerListener.processMovement(locTo, locFrom, rider, event);
+        if (PlayerListener.flagsPreventMovement(locTo, locFrom, group)) {
+            event.setCancelled(true);
+        }
     }
 }

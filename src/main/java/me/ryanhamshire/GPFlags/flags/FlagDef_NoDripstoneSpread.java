@@ -43,9 +43,4 @@ public class FlagDef_NoDripstoneSpread extends FlagDefinition {
         return new MessageSpecifier(Messages.DisableNoDripstoneSpread);
     }
 
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.WORLD, FlagType.SERVER);
-    }
-
 }

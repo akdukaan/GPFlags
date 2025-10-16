@@ -48,9 +48,4 @@ public class FlagDef_NoIceForm extends FlagDefinition {
         return new MessageSpecifier(Messages.DisableNoIceForm);
     }
 
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.WORLD, FlagType.SERVER);
-    }
-
 }

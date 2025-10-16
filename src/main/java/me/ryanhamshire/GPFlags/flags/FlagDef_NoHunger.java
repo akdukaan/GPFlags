@@ -55,9 +55,4 @@ public class FlagDef_NoHunger extends FlagDefinition {
         return new MessageSpecifier(Messages.DisableNoHunger);
     }
 
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.WORLD, FlagType.SERVER);
-    }
-
 }

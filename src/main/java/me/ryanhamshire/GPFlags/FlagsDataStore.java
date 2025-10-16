@@ -1,6 +1,6 @@
 package me.ryanhamshire.GPFlags;
 
-import me.ryanhamshire.GPFlags.util.Util;
+import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -14,6 +14,8 @@ import java.util.HashMap;
 //singleton class which manages all GriefPrevention data (except for config options)
 public class FlagsDataStore {
 
+    public static int PRIOR_CONFIG_VERSION = 0;
+    public static int CONFIG_VERSION = 1;
     private final static String dataLayerFolderPath = "plugins" + File.separator + "GPFlags";
     final static String configFilePath = dataLayerFolderPath + File.separator + "config.yml";
     final static String messagesFilePath = dataLayerFolderPath + File.separator + "messages.yml";
@@ -34,9 +36,9 @@ public class FlagsDataStore {
         HashMap<String, CustomizableMessage> defaults = new HashMap<>();
 
         //initialize defaults
-        this.addDefault(defaults, Messages.NoCommandPermission, "You do not have permission to use command: &7/gpflags &b{0}", "0:subcommand");
-        this.addDefault(defaults, Messages.UnknownCommand, "Unknown Command: &7/gpflags &c{0}", "0:subcommand");
-        this.addDefault(defaults, Messages.PlayerOnlyCommand, "Player Only Command: &7/gpflags &c{0}", "0:subcommand");
+        this.addDefault(defaults, Messages.NoCommandPermission, "You do not have permission to use command: <grey>/gpflags <aqua>{0}", "0:subcommand");
+        this.addDefault(defaults, Messages.UnknownCommand, "Unknown Command: <grey>/gpflags <red>{0}", "0:subcommand");
+        this.addDefault(defaults, Messages.PlayerOnlyCommand, "Player Only Command: <grey>/gpflags <red>{0}", "0:subcommand");
         this.addDefault(defaults, Messages.ReloadComplete, "Reloaded config settings, messages, and flags from disk.  If you've updated your GPFlags jar file, you MUST restart your server to activate the update.", null);
         this.addDefault(defaults, Messages.NoFlagsInThisClaim, "This claim doesn't have any flags.", null);
         this.addDefault(defaults, Messages.ThatFlagNotSet, "That flag isn't set here.", null);
@@ -48,7 +50,7 @@ public class FlagsDataStore {
         this.addDefault(defaults, Messages.FlagsDefault, "All Claims: {0}", "0:list of active default flags in all land claims");
         this.addDefault(defaults, Messages.FlagsWorld, "This World: {0}", "0:list of active flags in this world");
         this.addDefault(defaults, Messages.FlagsServer, "Entire Server: {0}", "0:list of flags which are active everywhere on the server");
-        this.addDefault(defaults, Messages.NoFlagPermission, "You don't have permission to use flag: &b{0}", "0:flag name");
+        this.addDefault(defaults, Messages.NoFlagPermission, "You don't have permission to use flag: <aqua>{0}", "0:flag name");
         this.addDefault(defaults, Messages.DefaultFlagSet, "Set flag for all land claims.  To make exceptions, move to specific land claims and use '/UnSetClaimFlag'.  Undo with '/UnSetDefaultClaimFlag'.", null);
         this.addDefault(defaults, Messages.DefaultFlagUnSet, "That flag is no longer set by default in any land claims.", null);
         this.addDefault(defaults, Messages.ServerFlagSet, "Set flag for entire server (all worlds).", null);
@@ -82,16 +84,16 @@ public class FlagsDataStore {
         this.addDefault(defaults, Messages.CommandRequired, "Please specify a command line to execute.", null);
         this.addDefault(defaults, Messages.ConsoleCommandRequired, "Please specify a command line(s) to execute.  You may find the %owner%, %name% and %uuid% placeholders useful.  Separate multiple command lines with a semicolon (;).", null);
         this.addDefault(defaults, Messages.PlayerCommandRequired, "Please specify a player command line(s) to execute.  You may find the %owner%, %name% and %uuid% placeholders useful.  Separate multiple command lines with a semicolon (;).\"", null);
-        this.addDefault(defaults, Messages.AddedEnterMessage, "Players entering this land claim will now receive this message:&b {0}", "0: message to send");
+        this.addDefault(defaults, Messages.AddedEnterMessage, "Players entering this land claim will now receive this message:<aqua> {0}", "0: message to send");
         this.addDefault(defaults, Messages.RemovedEnterMessage, "Players entering this land claim will not receive any message.", null);
 
-        this.addDefault(defaults, Messages.AddedEnterActionbar, "Players entering this land claim will now receive this actionbar:&b {0}", "0: message to send");
+        this.addDefault(defaults, Messages.AddedEnterActionbar, "Players entering this land claim will now receive this actionbar:<aqua> {0}", "0: message to send");
         this.addDefault(defaults, Messages.RemovedEnterActionbar, "Players entering this land claim will not receive any actionbar.", null);
         this.addDefault(defaults, Messages.ActionbarRequired, "Please specify an actionbar to send.", null);
-        this.addDefault(defaults, Messages.AddedExitActionbar, "Players exiting this land claim will now receive this actionbar:&b {0}", "0: message to send");
+        this.addDefault(defaults, Messages.AddedExitActionbar, "Players exiting this land claim will now receive this actionbar:<aqua> {0}", "0: message to send");
         this.addDefault(defaults, Messages.RemovedExitActionbar, "Players exiting this land claim will not receive any actionbar.", null);
 
-        this.addDefault(defaults, Messages.AddedExitMessage, "Players exiting this land claim will now receive this message:&b {0}", "0: message to send");
+        this.addDefault(defaults, Messages.AddedExitMessage, "Players exiting this land claim will now receive this message:<aqua> {0}", "0: message to send");
         this.addDefault(defaults, Messages.RemovedExitMessage, "Players exiting this land claim will not receive any message.", null);
         this.addDefault(defaults, Messages.EnterExitPrefix, "", "This prefix will be added to all enter/exit message flags");
 
@@ -144,6 +146,7 @@ public class FlagsDataStore {
         this.addDefault(defaults, Messages.EnableHealthRegen, "Now regenerating player health here.", null);
         this.addDefault(defaults, Messages.DisableHealthRegen, "Stopped regenerating player health here.", null);
         this.addDefault(defaults, Messages.HealthRegenGreaterThanZero, "Please specify how many health points (minimum: 1) players should regenerate per 5 seconds.", null);
+        this.addDefault(defaults, Messages.HealthRegenTooHigh, "The selected regen amount is too high", null);
 
         this.addDefault(defaults, Messages.EnableNoHunger, "Disabled food level loss and hunger damage in this area.", null);
         this.addDefault(defaults, Messages.DisableNoHunger, "Enabled food level loss and hunger damage in this area.", null);
@@ -156,7 +159,7 @@ public class FlagsDataStore {
         this.addDefault(defaults, Messages.CommandListRequired, "Please provide a list of commands, separated by semicolons(;).", null);
         this.addDefault(defaults, Messages.CommandBlockedHere, "You don't have permission to use that command here.", null);
 
-        this.addDefault(defaults, Messages.CantFlyHere, "You can't fly here.", null);
+        this.addDefault(defaults, Messages.CantFlyHere, "Flags in this region don't permit flight.", null);
         this.addDefault(defaults, Messages.EnableNoFlight, "Now blocking flight in this area.", null);
         this.addDefault(defaults, Messages.DisableNoFlight, "Stopped preventing flight in this area.", null);
 
@@ -171,12 +174,12 @@ public class FlagsDataStore {
 
         this.addDefault(defaults, Messages.EnableNoEnderPearl, "Now blocking ender pearl teleportation to/from this area.", null);
         this.addDefault(defaults, Messages.DisableNoEnderPearl, "Stopped blocking ender pearl teleportation to/from this area.", null);
-        this.addDefault(defaults, Messages.NoEnderPearlInClaim, "{p}, you cannot use enderpearls in {o}'s claim",
-                "o: owner of claim" + " p: event player");
-        this.addDefault(defaults, Messages.NoEnderPearlToClaim, "{p}, you cannot use enderpearls to teleport into {o}'s claim",
-                "o: owner of claim" + " p: event player");
-        this.addDefault(defaults, Messages.NoEnderPearlInWorld, "{p}, you cannot use enderpearls in this world",
-                "p: event player");
+        this.addDefault(defaults, Messages.NoEnderPearlInClaim, "{0}, you cannot use enderpearls in {1}'s claim",
+                " 0: event player, 1: owner of claim");
+        this.addDefault(defaults, Messages.NoEnderPearlToClaim, "{0}, you cannot use enderpearls to teleport into {1}'s claim",
+                " 0: event player, 1: owner of claim");
+        this.addDefault(defaults, Messages.NoEnderPearlInWorld, "{0}, you cannot use enderpearls in this world",
+                "0: event player");
 
         this.addDefault(defaults, Messages.EnableNoMcMMOSkills, "Now blocking McMMO skill use in this area.", null);
         this.addDefault(defaults, Messages.DisableNoMcMMOSkills, "Stopped blocking McMMO skill use in this area.", null);
@@ -205,114 +208,119 @@ public class FlagsDataStore {
         this.addDefault(defaults, Messages.EnableNoChorusFruit, "Now blocking chorus fruit teleportation in this area.", null);
         this.addDefault(defaults, Messages.DisableNoChorusFruit, "Stopped blocking chorus fruit teleportation in this area.", null);
 
-        this.addDefault(defaults, Messages.SpleefArenaHelp, "Example syntax: 'minecraft:snow_block minecraft:bricks 20'.  See the GriefPrevention Flags page on spigotmc.org for more help.", null);
+        this.addDefault(defaults, Messages.SpleefArenaHelp, "Example syntax: 'minecraft:snow_block minecraft:bricks 20'. See the https://modrinth.com/plugin/gpflags for more help.", null);
         this.addDefault(defaults, Messages.SetSpleefArena, "Now allowing some block types to be destroyed, and automatically regenerating them when players die in this area.", null);
         this.addDefault(defaults, Messages.UnSetSpleefArena, "Stopped overriding Grief Prevention's block breaking rules and generating blocks when players die in this area.", null);
 
-        this.addDefault(defaults, Messages.EnableNoGrowth, "Blocks will no longer grow in this area", null);
-        this.addDefault(defaults, Messages.DisableNoGrowth, "Blocks will now continue to grow in this area", null);
+        this.addDefault(defaults, Messages.EnableNoGrowth, "Blocks will no longer grow in this area.", null);
+        this.addDefault(defaults, Messages.DisableNoGrowth, "Blocks will now continue to grow in this area.", null);
 
-        this.addDefault(defaults, Messages.EnableNoBlockFade, "Blocks will no longer fade in this area", null);
-        this.addDefault(defaults, Messages.DisableNoBlockFade, "Blocks will continue to fade in this area", null);
+        this.addDefault(defaults, Messages.EnableNoBlockFade, "Blocks will no longer fade in this area.", null);
+        this.addDefault(defaults, Messages.DisableNoBlockFade, "Blocks will continue to fade in this area.", null);
 
-        this.addDefault(defaults, Messages.EnableNoCoralDeath, "Coral will no longer die in this area", null);
-        this.addDefault(defaults, Messages.DisableNoCoralDeath, "Coral will continue to die in this area", null);
+        this.addDefault(defaults, Messages.EnableNoCoralDeath, "Coral will no longer die in this area.", null);
+        this.addDefault(defaults, Messages.DisableNoCoralDeath, "Coral will continue to die in this area.", null);
 
-        this.addDefault(defaults, Messages.ExitFlightDisabled, "Flight disabled", null);
-        this.addDefault(defaults, Messages.EnterFlightEnabled, "Flight enabled", null);
+        this.addDefault(defaults, Messages.ExitFlightDisabled, "Flight disabled.", null);
+        this.addDefault(defaults, Messages.EnterFlightEnabled, "Flight enabled.", null);
 
-        this.addDefault(defaults, Messages.OwnerFlightEnabled, "The owner of this claim can now fly in this claim", null);
-        this.addDefault(defaults, Messages.OwnerFlightDisabled, "The owner of this claim can no longer fly in this claim", null);
+        this.addDefault(defaults, Messages.OwnerFlightEnabled, "The owner of this claim can now fly in this claim.", null);
+        this.addDefault(defaults, Messages.OwnerFlightDisabled, "The owner of this claim can no longer fly in this claim.", null);
 
-        this.addDefault(defaults, Messages.OwnerMemberFlightEnabled, "The owner and members with access trust or higher can now fly in this claim", null);
-        this.addDefault(defaults, Messages.OwnerMemberFlightDisabled, "The owner and members of this claim can no longer fly in this claim", null);
+        this.addDefault(defaults, Messages.OwnerMemberFlightEnabled, "The owner and members with access trust or higher can now fly in this claim.", null);
+        this.addDefault(defaults, Messages.OwnerMemberFlightDisabled, "The owner and members of this claim can no longer fly in this claim.", null);
 
-        this.addDefault(defaults, Messages.EnabledNoEnterPlayer, "Enabled NoEnterPlayer for: {0}", "0: players to block");
-        this.addDefault(defaults, Messages.DisabledNoEnterPlayer, "Disabled NoEnterPlayer", null);
-        this.addDefault(defaults, Messages.NoEnterPlayerMessage, "You have been blocked from entering this claim", null);
-        this.addDefault(defaults, Messages.PlayerRequired, "Player(s) required. Use a comma to separate", null);
+        this.addDefault(defaults, Messages.PermissionFlightEnabled, "PermissionFly has been enabled in this region.", null);
+        this.addDefault(defaults, Messages.PermissionFlightDisabled, "PermissionFly has been disabled in this region.", null);
 
-        this.addDefault(defaults, Messages.PlayerWeatherRequired, "Weather required <sun/rain>", null);
-        this.addDefault(defaults, Messages.PlayerWeatherSet, "Player weather in this claim has been set to {0}", "0: Weather to send");
-        this.addDefault(defaults, Messages.PlayerWeatherUnSet, "Player weather has been unset in this claim", null);
+        this.addDefault(defaults, Messages.EnabledNoEnterPlayer, "Enabled NoEnterPlayer for the following {1} players: {0}", "0: players to block. 1: number of players to block");
+        this.addDefault(defaults, Messages.DisabledNoEnterPlayer, "Disabled NoEnterPlayer.", null);
+        this.addDefault(defaults, Messages.NoEnterPlayerMessage, "You have been blocked from entering this claim.", null);
+        this.addDefault(defaults, Messages.PlayerRequired, "Include the list of players to block when setting this flag.", null);
 
-        this.addDefault(defaults, Messages.PlayerTimeRequired, "Time required <day/noon/night/midnight>", null);
-        this.addDefault(defaults, Messages.PlayerTimeSet, "Player time in this claim has been set to {0}", "0: Time to send");
-        this.addDefault(defaults, Messages.PlayerTimeUnSet, "Player time has been unset in this claim", null);
+        this.addDefault(defaults, Messages.PlayerWeatherRequired, "Weather required <sun/rain>.", null);
+        this.addDefault(defaults, Messages.PlayerWeatherSet, "Player weather in this claim has been set to {0}.", "0: Weather to send");
+        this.addDefault(defaults, Messages.PlayerWeatherUnSet, "Player weather has been unset in this claim.", null);
 
-        this.addDefault(defaults, Messages.PlayerGamemodeRequired, "Gamemode required <survival/creative/adventure/spectator>", null);
-        this.addDefault(defaults, Messages.PlayerGamemodeSet, "Player gamemode in this claim has been set to {0}", "0: Gamemode to send");
-        this.addDefault(defaults, Messages.PlayerGamemodeUnSet, "Player gamemode has been unset in this claim", null);
+        this.addDefault(defaults, Messages.PlayerTimeRequired, "Time required <day/noon/night/midnight>.", null);
+        this.addDefault(defaults, Messages.PlayerTimeSet, "Player time in this claim has been set to {0}.", "0: Time to send");
+        this.addDefault(defaults, Messages.PlayerTimeUnSet, "Player time has been unset in this claim.", null);
+
+        this.addDefault(defaults, Messages.PlayerGamemodeRequired, "Gamemode required <survival/creative/adventure/spectator>.", null);
+        this.addDefault(defaults, Messages.PlayerGamemodeSet, "Player gamemode in this claim has been set to {0}.", "0: Gamemode to send");
+        this.addDefault(defaults, Messages.PlayerGamemodeUnSet, "Player gamemode has been unset in this claim.", null);
         this.addDefault(defaults, Messages.PlayerGamemode, "Your gamemode has been changed to {0}", "0: Gamemode to send");
 
-        this.addDefault(defaults, Messages.EnableNoVineGrowth, "Vines will no longer grow in this area", null);
-        this.addDefault(defaults, Messages.DisableNoVineGrowth, "Vines will now continue to grow in this area", null);
+        this.addDefault(defaults, Messages.EnableNoVineGrowth, "Vines will no longer grow in this area.", null);
+        this.addDefault(defaults, Messages.DisableNoVineGrowth, "Vines will now continue to grow in this area.", null);
 
-        this.addDefault(defaults, Messages.EnableNoSnowForm, "Snow will no longer form in this area", null);
-        this.addDefault(defaults, Messages.DisableNoSnowForm, "Snow will now continue to form in this area", null);
+        this.addDefault(defaults, Messages.EnableNoSnowForm, "Snow will no longer form in this area.", null);
+        this.addDefault(defaults, Messages.DisableNoSnowForm, "Snow will now continue to form in this area.", null);
 
-        this.addDefault(defaults, Messages.EnableNoIceForm, "Ice will no longer form in this area", null);
-        this.addDefault(defaults, Messages.DisableNoIceForm, "Ice will now continue to form in this area", null);
+        this.addDefault(defaults, Messages.EnableNoIceForm, "Ice will no longer form in this area.", null);
+        this.addDefault(defaults, Messages.DisableNoIceForm, "Ice will now continue to form in this area.", null);
 
-        this.addDefault(defaults, Messages.EnabledNoFireSpread, "Fire will no longer spread in this area", null);
-        this.addDefault(defaults, Messages.DisabledNoFireSpread, "Fire will now continue to spread in this area", null);
+        this.addDefault(defaults, Messages.EnabledNoFireSpread, "Fire will no longer spread in this area.", null);
+        this.addDefault(defaults, Messages.DisabledNoFireSpread, "Fire will now continue to spread in this area.", null);
 
-        this.addDefault(defaults, Messages.EnableNoFireDamage, "Fire will no longer damage blocks in this area", null);
-        this.addDefault(defaults, Messages.DisableNoFireDamage, "Fire will now continue to damage blocks in this area", null);
+        this.addDefault(defaults, Messages.EnableNoFireDamage, "Fire will no longer damage blocks in this area.", null);
+        this.addDefault(defaults, Messages.DisableNoFireDamage, "Fire will now continue to damage blocks in this area.", null);
 
-        this.addDefault(defaults, Messages.EnabledNoFallDamage, "Player will no longer take fall damage in this claim", null);
-        this.addDefault(defaults, Messages.DisabledNoFallDamage, "Players will now continue to take fall damage in this claim", null);
+        this.addDefault(defaults, Messages.EnabledNoFallDamage, "Player will no longer take fall damage in this claim.", null);
+        this.addDefault(defaults, Messages.DisabledNoFallDamage, "Players will now continue to take fall damage in this claim.", null);
 
-        this.addDefault(defaults, Messages.EnabledNoExplosionDamage, "Players will no longer take damage caused by explosions in this claim", null);
-        this.addDefault(defaults, Messages.DisabledNoExplosionDamage, "Players will now continue to take damage caused by explosions in this claim", null);
+        this.addDefault(defaults, Messages.EnabledNoExplosionDamage, "Players will no longer take damage caused by explosions in this claim.", null);
+        this.addDefault(defaults, Messages.DisabledNoExplosionDamage, "Players will now continue to take damage caused by explosions in this claim.", null);
 
-        this.addDefault(defaults, Messages.EnabledAllowBlockExplosions, "Blocks will now explode in this region", null);
-        this.addDefault(defaults, Messages.DisabledAllowBlockExplosions, "Blocks will no longer explode in this region", null);
+        this.addDefault(defaults, Messages.EnabledAllowBlockExplosions, "Blocks will now explode in this region.", null);
+        this.addDefault(defaults, Messages.DisabledAllowBlockExplosions, "Blocks will no longer explode in this region.", null);
 
-        this.addDefault(defaults, Messages.NoOwnerFlag, "You cannot set both OwnerFly and OwnerMemberFly flags in one claim", null);
+        this.addDefault(defaults, Messages.NoOwnerFlag, "You cannot set both OwnerFly and OwnerMemberFly flags in one claim.", null);
 
         this.addDefault(defaults, Messages.ChangeBiomeSet, "The biome in this claim has been set to {0}. Relog to see the changes.", "0: Biome");
-        this.addDefault(defaults, Messages.ChangeBiomeUnset, "The biome in this claim has been restored. Relog to see the changes.", null);
+        this.addDefault(defaults, Messages.ChangeBiomeUnset, "You've unset the ChangeBiome flag.", null);
 
-        this.addDefault(defaults, Messages.NoFlagInClaim, "This flag cannot be set in a claim", null);
-        this.addDefault(defaults, Messages.NoFlagInWorld, "This flag cannot be set for a whole world", null);
-        this.addDefault(defaults, Messages.NoFlagInServer, "This flag cannot be set for the whole server", null);
+        this.addDefault(defaults, Messages.NoFlagInClaim, "This flag cannot be set in a claim.", null);
+        this.addDefault(defaults, Messages.NoFlagInWorld, "This flag cannot be set for a whole world.", null);
+        this.addDefault(defaults, Messages.NoFlagInServer, "This flag cannot be set for the whole server.", null);
+        this.addDefault(defaults, Messages.NoFlagInDefault, "This flag cannot be set as a default flag.", null);
 
-        this.addDefault(defaults, Messages.EnableNoOpenDoor, "Doors can no longer be opened in this area", null);
-        this.addDefault(defaults, Messages.DisableNoOpenDoor, "Doors can now be opened in this area", null);
-        this.addDefault(defaults, Messages.NoOpenDoorMessage, "You do not have permission to open {0} in this area", "0: DoorType");
+        this.addDefault(defaults, Messages.EnableNoOpenDoor, "Doors can no longer be opened in this area.", null);
+        this.addDefault(defaults, Messages.DisableNoOpenDoor, "Doors can now be opened in this area.", null);
+        this.addDefault(defaults, Messages.NoOpenDoorMessage, "You do not have permission to open {0} in this area.", "0: DoorType");
 
-        this.addDefault(defaults, Messages.EnabledNoVehicle, "Vehicles can no longer be placed in this area", null);
-        this.addDefault(defaults, Messages.DisabledNoVehicle, "Vehicles can now be placed in this area", null);
-        this.addDefault(defaults, Messages.NoPlaceVehicle, "You cannot place vehicles in this area", null);
-        this.addDefault(defaults, Messages.NoEnterVehicle, "You can not enter vehicles in this area", null);
-        this.addDefault(defaults, Messages.NoVehicleAllowed, "Vehicles are not allowed in this area", null);
+        this.addDefault(defaults, Messages.EnabledNoVehicle, "Vehicles can no longer be placed in this area.", null);
+        this.addDefault(defaults, Messages.DisabledNoVehicle, "Vehicles can now be placed in this area.", null);
+        this.addDefault(defaults, Messages.NoPlaceVehicle, "You cannot place vehicles in this area.", null);
+        this.addDefault(defaults, Messages.NoEnterVehicle, "You can not enter vehicles in this area.", null);
+        this.addDefault(defaults, Messages.NoVehicleAllowed, "Vehicles are not allowed in this area.", null);
 
-        this.addDefault(defaults, Messages.EnabledNoMobSpawnsType, "The spawning of {0} has been disabled in this area", "0: Mob Types");
-        this.addDefault(defaults, Messages.DisabledNoMobSpawnsType, "The flag mobs will now be able to spawn again in this area", null);
-        this.addDefault(defaults, Messages.MobTypeRequired, "A mob type is required", null);
-        this.addDefault(defaults, Messages.MobTypePerm, "You do not have permission to deny the spawning of {0}", "0: Mob Type");
+        this.addDefault(defaults, Messages.EnabledNoMobSpawnsType, "The spawning of {0} has been disabled in this area.", "0: Mob Types");
+        this.addDefault(defaults, Messages.DisabledNoMobSpawnsType, "The flag mobs will now be able to spawn again in this area.", null);
+        this.addDefault(defaults, Messages.MobTypeRequired, "A mob type is required.", null);
+        this.addDefault(defaults, Messages.MobTypePerm, "You do not have permission to deny the spawning of {0}.", "0: Mob Type");
 
-        this.addDefault(defaults, Messages.EnabledNoItemDamage, "Items will no longer take damage in this area", null);
-        this.addDefault(defaults, Messages.DisabledNoItemDamage, "Items will continue to take damage in this area", null);
+        this.addDefault(defaults, Messages.EnabledNoItemDamage, "Items will no longer take damage in this area.", null);
+        this.addDefault(defaults, Messages.DisabledNoItemDamage, "Items will continue to take damage in this area.", null);
 
-        this.addDefault(defaults, Messages.EnabledRaidMemberOnly, "Only claim members can trigger raids in this area", null);
-        this.addDefault(defaults, Messages.DisabledRaidMemberOnly, "Anyone can trigger raids in this area", null);
-        this.addDefault(defaults, Messages.RaidMemberOnlyDeny, "You cannot initiate a raid in this area", null);
+        this.addDefault(defaults, Messages.EnabledRaidMemberOnly, "Only claim members can trigger raids in this area.", null);
+        this.addDefault(defaults, Messages.DisabledRaidMemberOnly, "Anyone can trigger raids in this area.", null);
+        this.addDefault(defaults, Messages.RaidMemberOnlyDeny, "You cannot initiate a raid in this area.", null);
 
-        this.addDefault(defaults, Messages.EnabledProtectNamedMobs, "Named mobs will no longer take damage in this area", null);
-        this.addDefault(defaults, Messages.DisabledProtectNamedMobs, "Named mobs will continue to take damage in this area", null);
+        this.addDefault(defaults, Messages.EnabledProtectNamedMobs, "Named mobs will no longer take damage in this area.", null);
+        this.addDefault(defaults, Messages.DisabledProtectNamedMobs, "Named mobs will continue to take damage in this area.", null);
 
         this.addDefault(defaults, Messages.EnabledNoStructureGrowth, "Now preventing structure growth in this region.", null);
         this.addDefault(defaults, Messages.DisableNoStructureGrowth, "No longer preventing structure growth in this region.", null);
-        this.addDefault(defaults, Messages.EnableNoElytra, "Players will no longer be able to glide in this area", null);
-        this.addDefault(defaults, Messages.DisableNoElytra, "Players will now be able to glide in this area", null);
+        this.addDefault(defaults, Messages.EnableNoElytra, "Players will no longer be able to glide in this area.", null);
+        this.addDefault(defaults, Messages.DisableNoElytra, "Players will now be able to glide in this area.", null);
         
-        this.addDefault(defaults, Messages.EnableViewContainers, "Players can now view (not manipulate) any container on your claim", null);
-        this.addDefault(defaults, Messages.DisableViewContainers, "Players can no longer view containers on your claim", null);
+        this.addDefault(defaults, Messages.EnableViewContainers, "Players can now view (not manipulate) any container on your claim.", null);
+        this.addDefault(defaults, Messages.DisableViewContainers, "Players can no longer view containers on your claim.", null);
         
-        this.addDefault(defaults, Messages.EnableReadLecterns, "Players can now read (not manipulate) lecturns on your claim", null);
-        this.addDefault(defaults, Messages.DisableReadLecterns, "Players can no longer read lecturns on your claim", null);
+        this.addDefault(defaults, Messages.EnableReadLecterns, "Players can now read (not manipulate) lecterns on your claim.", null);
+        this.addDefault(defaults, Messages.DisableReadLecterns, "Players can no longer read lecterns on your claim", null);
+        this.addDefault(defaults, Messages.LecternOpened, "Lectern opened in view-only state", "A nonempty string must be provided or the flag wont work.");
 
         this.addDefault(defaults, Messages.EnableNoBlockGravity, "Disabling block gravity in this area.", null);
         this.addDefault(defaults, Messages.DisableNoBlockGravity, "Enabling block gravity in this area.", null);
@@ -326,15 +334,15 @@ public class FlagsDataStore {
         this.addDefault(defaults, Messages.EnableNoDripstoneSpread, "Dripstone will no longer spread based on world conditions.", null);
         this.addDefault(defaults, Messages.DisableNoDripstoneSpread, "Dripstone will once again spread based on world conditions.", null);
 
-        this.addDefault(defaults, Messages.EnableBuyBuildTrust, "Build trust can now be bought in this claim for {0}.", "0: Cost");
+        this.addDefault(defaults, Messages.EnableBuyBuildTrust, "Build trust can now be bought in this claim for ${0}.", "0: Cost");
         this.addDefault(defaults, Messages.DisableBuyBuildTrust, "Build trust can no longer be bought in this claim.", null);
         this.addDefault(defaults, Messages.BuildTrustPrice, "You can buy build trust in this claim for ${0}. If you wish to do so, use /buybuildtrust.",
                 "0: cost");
-        this.addDefault(defaults, Messages.EnableBuyAccessTrust, "Access trust can now be bought in this claim for {0}.", "0: Cost");
+        this.addDefault(defaults, Messages.EnableBuyAccessTrust, "Access trust can now be bought in this claim for ${0}.", "0: Cost");
         this.addDefault(defaults, Messages.DisableBuyAccessTrust, "Access trust can no longer be bought in this claim.", null);
         this.addDefault(defaults, Messages.AccessTrustPrice, "You can buy access trust in this claim for ${0}. If you wish to do so, use /buyaccesstrust.",
                 "0: cost");
-        this.addDefault(defaults, Messages.EnableBuyContainerTrust, "Container trust can now be bought in this claim for {0}.", "0: Cost");
+        this.addDefault(defaults, Messages.EnableBuyContainerTrust, "Container trust can now be bought in this claim for ${0}.", "0: Cost");
         this.addDefault(defaults, Messages.DisableBuyContainerTrust, "Container trust can no longer be bought in this claim.", null);
         this.addDefault(defaults, Messages.ContainerTrustPrice, "You can buy container trust in this claim for ${0}. If you wish to do so, use /buycontainertrust.",
                 "0: cost");
@@ -346,12 +354,12 @@ public class FlagsDataStore {
         this.addDefault(defaults, Messages.CannotBuyTrustHere, "That type of trust can not be bought in this claim.", null);
         this.addDefault(defaults, Messages.BoughtTrust, "You have successfully bought that type of trust for ${0}.", "0: Cost");
 
-        this.addDefault(defaults, Messages.EnableNotifyEnter, "You will now receive notifications when a player enters this claim", null);
-        this.addDefault(defaults, Messages.DisableNotifyEnter, "You will no longer receive notifications when a player enters this claim", null);
+        this.addDefault(defaults, Messages.EnableNotifyEnter, "You will now receive notifications when a player enters this claim.", null);
+        this.addDefault(defaults, Messages.DisableNotifyEnter, "You will no longer receive notifications when a player enters this claim.", null);
         this.addDefault(defaults, Messages.NotifyEnter, "{0} has entered {1}", "0: player, 1: claim name");
 
-        this.addDefault(defaults, Messages.EnableNotifyExit, "You will now receive notifications when a player enters this claim", null);
-        this.addDefault(defaults, Messages.DisableNotifyExit, "You will no longer receive notifications when a player exits this claim", null);
+        this.addDefault(defaults, Messages.EnableNotifyExit, "You will now receive notifications when a player enters this claim.", null);
+        this.addDefault(defaults, Messages.DisableNotifyExit, "You will no longer receive notifications when a player exits this claim.", null);
 
         this.addDefault(defaults, Messages.EnableNoAnvilDamage, "Anvils will no longer be damaged when used.", null);
         this.addDefault(defaults, Messages.DisableNoAnvilDamage, "Anvils will once again be damaged when used.", null);
@@ -362,6 +370,11 @@ public class FlagsDataStore {
         this.addDefault(defaults, Messages.EnableNoEliteMobSpawns, "Now preventing elite mob spawns in this region.", null);
         this.addDefault(defaults, Messages.DisableNoEliteMobSpawns, "No longer preventing elite mob spawns in this region.", null);
 
+        this.addDefault(defaults, Messages.EnabledAllowInfest, "Silverfish can now infest blocks in this area.", null);
+        this.addDefault(defaults, Messages.DisabledAllowInfest, "Silverfish can no longer infest blocks in this area.", null);
+
+        this.addDefault(defaults, Messages.EnableNoCropTrampling, "Disabled crop trampling in this area.", null);
+        this.addDefault(defaults, Messages.DisableNoCropTrampling, "Enabled crop trampling in this area.", null);
 
         this.addDefault(defaults, Messages.EnabledNoPotionEffects, "Potion effects are now disabled in this region.", null);
         this.addDefault(defaults, Messages.DisabledNoPotionEffects, "Potion effects are now enabled in this region.", null);
@@ -377,25 +390,39 @@ public class FlagsDataStore {
         this.addDefault(defaults, Messages.DisableBuySubclaim, "This subclaim can no longer be purchased.", null);
         this.addDefault(defaults, Messages.SubclaimPrice, "You can buy this subclaim for {0}. If you wish to do so, use /buysubclaim.", "0: cost");
 
-        this.addDefault(defaults, Messages.Prefix, "&7[&bGP&3Flags&7] &r", null);
+        this.addDefault(defaults, Messages.EnabledAllowVillagerTrading, "Players can now trade with villagers in this claim.", null);
+        this.addDefault(defaults, Messages.DisabledAllowVillagerTrading, "Players can no longer trade with villagers in this claim.", null);
+
+        this.addDefault(defaults, Messages.EnabledRestoreGrazedGrass, "Grass will now immediiately regrow after being grazed by sheep.", null);
+        this.addDefault(defaults, Messages.DisabledRestoreGrazedGrass, "Grass will no longer immediately regrow after being grazed by sheep.", null);
 
         //load the config file
-        FileConfiguration config = YamlConfiguration.loadConfiguration(new File(messagesFilePath));
+        File file = new File(messagesFilePath);
+        FileConfiguration config = YamlConfiguration.loadConfiguration(file);
+
+        // read the config version for conversions
+        if (file.exists()) {
+            PRIOR_CONFIG_VERSION = config.getInt("Version (Don't change this)", 0);
+        } else {
+            PRIOR_CONFIG_VERSION = CONFIG_VERSION;
+        }
+        config.set("Version (Don't change this)", CONFIG_VERSION);
 
         //for each message ID
-        for (int i = 0; i < messageIDs.length; i++) {
+        for (Messages messageID : messageIDs) {
             //get default for this message
-            Messages messageID = messageIDs[i];
             CustomizableMessage messageData = defaults.get(messageID.name());
 
             //if default is missing, log an error and use some fake data for now so that the plugin can run
             if (messageData == null) {
-                Util.log("Missing message for " + messageID.name() + ".  Please contact the developer.");
                 messageData = new CustomizableMessage(messageID, "Missing message!  ID: " + messageID.name() + ".  Please contact a server admin.", null);
             }
 
             //read the message from the file, use default if necessary
             this.messages[messageID.ordinal()] = config.getString("Messages." + messageID.name() + ".Text", messageData.text);
+            if (PRIOR_CONFIG_VERSION < 1) {
+                this.messages[messageID.ordinal()] = MessagingUtil.reserialize(this.messages[messageID.ordinal()]);
+            }
             config.set("Messages." + messageID.name() + ".Text", this.messages[messageID.ordinal()]);
 
             if (messageData.notes != null) {
@@ -406,10 +433,12 @@ public class FlagsDataStore {
 
         //save any changes
         try {
+            // If config updating was success, update version to 1
+            if (CONFIG_VERSION == 0) {
+                config.set("Version (Don't change this)", 1);
+            }
             config.save(FlagsDataStore.messagesFilePath);
-        } catch (IOException exception) {
-            Util.log("Unable to write to the configuration file at \"" + FlagsDataStore.messagesFilePath + "\"");
-        }
+        } catch (IOException ignored) {}
 
         defaults.clear();
         System.gc();
@@ -428,9 +457,6 @@ public class FlagsDataStore {
             message = message.replace("{" + i + "}", param);
         }
         return message;
-    }
-
-    void close() {
     }
 
 }

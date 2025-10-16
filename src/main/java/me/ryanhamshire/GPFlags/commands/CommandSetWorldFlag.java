@@ -5,9 +5,9 @@ import me.ryanhamshire.GPFlags.Messages;
 import me.ryanhamshire.GPFlags.SetFlagResult;
 import me.ryanhamshire.GPFlags.TextMode;
 import me.ryanhamshire.GPFlags.flags.FlagDefinition;
+import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import me.ryanhamshire.GPFlags.util.Util;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -24,14 +24,14 @@ public class CommandSetWorldFlag implements TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
         if (!sender.hasPermission("gpflags.command.setworldflag")) {
-            Util.sendMessage(sender, TextMode.Err, Messages.NoCommandPermission, command.toString());
+            MessagingUtil.sendMessage(sender, TextMode.Err, Messages.NoCommandPermission, command.toString());
             return true;
         }
         if (args.length < 2) return false;
 
         World world = Bukkit.getWorld(args[0]);
         if (world == null) {
-            Util.sendMessage(sender, TextMode.Err, Messages.WorldNotFound, args[0]);
+            MessagingUtil.sendMessage(sender, TextMode.Err, Messages.WorldNotFound, args[0]);
             return true;
         }
 
@@ -39,30 +39,30 @@ public class CommandSetWorldFlag implements TabExecutor {
         GPFlags gpflags = GPFlags.getInstance();
         FlagDefinition def = gpflags.getFlagManager().getFlagDefinitionByName(flagName);
         if (def == null) {
-            Util.sendMessage(sender, TextMode.Err, Util.getFlagDefsMessage(sender));
+            MessagingUtil.sendMessage(sender, TextMode.Err, Messages.InvalidFlagDefName, Util.getAvailableFlags(sender));
             return true;
         }
 
         if (!sender.hasPermission("gpflags.flag." + def.getName())) {
-            Util.sendMessage(sender, TextMode.Err, Messages.NoFlagPermission, def.getName());
+            MessagingUtil.sendMessage(sender, TextMode.Err, Messages.NoFlagPermission, def.getName());
             return true;
         }
 
         if (!def.getFlagType().contains(FlagDefinition.FlagType.WORLD)) {
-            Util.sendMessage(sender, TextMode.Err, Messages.NoFlagInWorld);
+            MessagingUtil.sendMessage(sender, TextMode.Err, Messages.NoFlagInWorld);
             return true;
         }
 
         String[] params = new String[args.length - 2];
         System.arraycopy(args, 2, params, 0, args.length - 2);
 
-        SetFlagResult result = gpflags.getFlagManager().setFlag(world.getName(), def, true, params);
-        ChatColor color = result.isSuccess() ? TextMode.Success : TextMode.Err;
+        SetFlagResult result = gpflags.getFlagManager().setFlag(world.getName(), def, true, sender, params);
+        String color = result.isSuccess() ? TextMode.Success : TextMode.Err;
         if (result.isSuccess()) {
-            Util.sendMessage(sender, color, Messages.WorldFlagSet);
+            MessagingUtil.sendMessage(sender, color, Messages.WorldFlagSet);
             gpflags.getFlagManager().save();
         } else {
-            Util.sendMessage(sender, color, result.getMessage().getMessageID(), result.getMessage().getMessageParams());
+            MessagingUtil.sendMessage(sender, color, result.getMessage().getMessageID(), result.getMessage().getMessageParams());
         }
 
         return true;

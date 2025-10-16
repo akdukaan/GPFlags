@@ -9,12 +9,14 @@ import me.ryanhamshire.GPFlags.SetFlagResult;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -56,7 +58,7 @@ public class FlagDef_RespawnLocation extends FlagDefinition {
     }
 
     @Override
-    public SetFlagResult validateParameters(String parameters) {
+    public SetFlagResult validateParameters(String parameters, CommandSender sender) {
         String[] params = parameters.split(" ");
 
         if (params.length < 4) {
@@ -94,11 +96,6 @@ public class FlagDef_RespawnLocation extends FlagDefinition {
     @Override
     public MessageSpecifier getUnSetMessage() {
         return new MessageSpecifier(Messages.UnSetRespawnLocation);
-    }
-
-    @Override
-    public List<FlagType> getFlagType() {
-        return Collections.singletonList(FlagType.CLAIM);
     }
 
 }

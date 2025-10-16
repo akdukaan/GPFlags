@@ -11,5 +11,6 @@ public class WorldSettings {
     public String worldGamemodeDefault = null;
     public boolean noMonsterSpawnIgnoreSpawners = false;
     public boolean noMobSpawnIgnoreSpawners = false;
+    public boolean clearFlagsOnTransferClaim = false;
 
 }

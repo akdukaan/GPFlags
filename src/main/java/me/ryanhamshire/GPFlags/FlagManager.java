@@ -2,27 +2,31 @@ package me.ryanhamshire.GPFlags;
 
 import com.google.common.io.Files;
 import me.ryanhamshire.GPFlags.flags.FlagDefinition;
-import me.ryanhamshire.GPFlags.util.Util;
+import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Manager for flags
+ * Inherited = Checks higher levels
+ * Self = Doesn't check higher levels
+ * Raw = Will return the flag for flags that are set to be unset
+ * Logical = Will return null for flags that are set to be unset
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class FlagManager {
@@ -78,7 +82,7 @@ public class FlagManager {
     }
 
     /**
-     * Set a flag for a claim. This is called on startup to load the datastore and when setting or unsetting a flag
+     * Set a flag for a claim. This is called on startup to load the datastore and when setting a flag to a value including false
      *
      * @param claimId  ID of {@link Claim} which this flag will be attached to
      * @param def      Flag definition to set
@@ -86,12 +90,12 @@ public class FlagManager {
      * @param args     Message parameters
      * @return Result of setting flag
      */
-    public SetFlagResult setFlag(String claimId, FlagDefinition def, boolean isActive, String... args) {
+    public SetFlagResult setFlag(String claimId, FlagDefinition def, boolean isActive, CommandSender sender, String... args) {
         StringBuilder internalParameters = new StringBuilder();
         StringBuilder friendlyParameters = new StringBuilder();
         for (String arg : args) {
             friendlyParameters.append(arg).append(" ");
-            if (def.getName().equals("NoEnterPlayer") && arg.length() > 0) {
+            if (def.getName().equals("NoEnterPlayer") && !arg.isEmpty()) {
                 if (arg.length() <= 30) {
                     OfflinePlayer offlinePlayer;
                     try {
@@ -99,7 +103,10 @@ public class FlagManager {
                         if (offlinePlayer != null) {
                             arg = offlinePlayer.getUniqueId().toString();
                         }
-                    } catch (NoSuchMethodError ignored) {}
+                    } catch (NoSuchMethodError ignored) {
+                        offlinePlayer = Bukkit.getOfflinePlayer(arg);
+                        arg = offlinePlayer.getUniqueId().toString();
+                    }
 
                 }
             }
@@ -110,7 +117,7 @@ public class FlagManager {
 
         SetFlagResult result;
         if (isActive) {
-            result = def.validateParameters(friendlyParameters.toString());
+            result = def.validateParameters(friendlyParameters.toString(), sender);
             if (!result.success) return result;
         } else {
             result = new SetFlagResult(true, def.getUnSetMessage());
@@ -129,10 +136,23 @@ public class FlagManager {
             def.incrementInstances();
         }
         claimFlags.put(key, flag);
+
+        // Deal with default flags being set
+        if (DEFAULT_FLAG_ID.equals(claimId)) {
+            for (Claim claim : GriefPrevention.instance.dataStore.getClaims()) {
+                if (isActive) {
+                    def.onFlagSet(claim, flag.parameters);
+                } else {
+                    def.onFlagUnset(claim);
+                }
+            }
+            return result;
+        }
+
         Claim claim;
         try {
             claim = GriefPrevention.instance.dataStore.getClaim(Long.parseLong(claimId));
-        } catch (Exception ignored) {
+        } catch (Throwable ignored) {
             return result;
         }
         if (claim != null) {
@@ -146,71 +166,115 @@ public class FlagManager {
     }
 
     /**
-     * Get a registered flag in a claim
      *
-     * @param claim   Claim to get a flag from
-     * @param flagDef Flag definition to get
-     * @return Instance of flag
+     * @param claim claim or subclaim
+     * @param flag flag name in all lowercase
+     * @return The raw instance of the flag
      */
-    public Flag getFlag(Claim claim, FlagDefinition flagDef) {
-        if (claim == null || flagDef == null) return null;
-        return getFlag(claim.getID().toString(), flagDef);
+    public @Nullable Flag getRawClaimFlag(@NotNull Claim claim, @NotNull String flag) {
+        String claimId = claim.getID().toString();
+        ConcurrentHashMap<String, Flag> claimFlags = this.flags.get(claimId);
+        if (claimFlags == null) return null;
+        return claimFlags.get(flag);
+    }
+
+    public @Nullable Flag getRawDefaultFlag(@NotNull String flag) {
+        ConcurrentHashMap<String, Flag> defaultFlags = flags.get(DEFAULT_FLAG_ID);
+        if (defaultFlags == null) return null;
+        return defaultFlags.get(flag);
+    }
+
+    public @Nullable Flag getRawWorldFlag(@NotNull World world, @NotNull String flag) {
+        ConcurrentHashMap<String, Flag> worldFlags = flags.get(world.getName());
+        if (worldFlags == null) return null;
+        return worldFlags.get(flag);
+    }
+
+    public @Nullable Flag getRawServerFlag(@NotNull String flag) {
+        ConcurrentHashMap<String, Flag> serverFlags = this.flags.get("everywhere");
+        if (serverFlags == null) return null;
+        return serverFlags.get(flag);
     }
 
     /**
-     * Get a registered/default flag in a claim
-     *
-     * @param claimID ID of claim
-     * @param flagDef Flag definition to get
-     * @return Instance of flag
+     * @param location
+     * @param flagname
+     * @param claim
+     * @return the effective flag at the location
      */
-    public Flag getFlag(String claimID, FlagDefinition flagDef) {
-        if (claimID == null || flagDef == null) return null;
-        return this.getFlag(claimID, flagDef.getName());
-    }
-
-    /**
-     * Get a registered/default flag in a claim
-     *
-     * @param claim Claim to get a flag from
-     * @param flag  Name of flag definition to get
-     * @return Instance of flag
-     */
-    public Flag getFlag(Claim claim, String flag) {
-        if (claim == null || flag == null) return null;
-        return getFlag(claim.getID().toString(), flag);
-    }
-
-    /**
-     * Get a registered/default flag in a claim
-     *
-     * @param claimID ID of claim
-     * @param flag    Name of flag definition to get
-     * @return Instance of flag
-     */
-    public Flag getFlag(String claimID, String flag) {
-        if (claimID == null || flag == null) return null;
-        String flagString = flag.toLowerCase(Locale.ROOT);
-        ConcurrentHashMap<String, Flag> claimFlags = this.flags.get(claimID);
-        if (claimFlags != null) {
-            if (claimFlags.containsKey(flagString)) {
-                return claimFlags.get(flagString);
-            }
-        }
-        if (claimID.equalsIgnoreCase("everywhere") || worlds.contains(claimID)) return null;
-        ConcurrentHashMap<String, Flag> defaultFlags = this.flags.get(DEFAULT_FLAG_ID);
-        if (defaultFlags != null) {
-            if (defaultFlags.containsKey(flagString)) {
-                // If it's a number, we know we are in a claim so return the default claimflag
-                // If it's a world's name, we know we are not in a claim, so return null
-                try {
-                    Integer.parseInt(claimID);
-                } catch (NumberFormatException nfe) {
+    public @Nullable Flag getEffectiveFlag(@Nullable Location location, @NotNull String flagname, @Nullable Claim claim) {
+        if (location == null) return null;
+        flagname = flagname.toLowerCase();
+        Flag flag;
+        if (GriefPrevention.instance.claimsEnabledForWorld(location.getWorld())) {
+            if (claim != null) {
+                flag = getRawClaimFlag(claim, flagname);
+                if (flag != null) {
+                    if (flag.getSet()) return flag;
                     return null;
                 }
-                return defaultFlags.get(flagString);
+                Claim parent = claim.parent;
+                if (parent != null) {
+                    flag = getRawClaimFlag(parent, flagname);
+                    if (flag != null) {
+                        if (flag.getSet()) return flag;
+                        return null;
+                    }
+                }
+                flag = getRawDefaultFlag(flagname);
+                if (flag != null) {
+                    if (flag.getSet()) return flag;
+                    return null;
+                }
             }
         }
+
+        flag = getRawWorldFlag(location.getWorld(), flagname);
+        if (flag != null && flag.getSet()) return flag;
+
+        flag = getRawServerFlag(flagname);
+        if (flag != null && flag.getSet()) return flag;
+
+        return null;
+    }
+
+    /**
+     *
+     * @param flagname
+     * @param claim
+     * @param world World to be checked if claim is null
+     * @return
+     */
+    public @Nullable Flag getEffectiveFlag(@NotNull String flagname, @Nullable Claim claim, @NotNull World world) {
+        flagname = flagname.toLowerCase();
+        Flag flag;
+        if (claim != null && GriefPrevention.instance.claimsEnabledForWorld(world)) {
+            flag = getRawClaimFlag(claim, flagname);
+            if (flag != null) {
+                if (flag.getSet()) return flag;
+                return null;
+            }
+            Claim parent = claim.parent;
+            if (parent != null) {
+                flag = getRawClaimFlag(parent, flagname);
+                if (flag != null) {
+                    if (flag.getSet()) return flag;
+                    return null;
+                }
+            }
+            flag = getRawDefaultFlag(flagname);
+            if (flag != null) {
+                if (flag.getSet()) return flag;
+                return null;
+            }
+        }
+
+        flag = getRawWorldFlag(world, flagname);
+        if (flag != null && flag.getSet()) return flag;
+
+        flag = getRawServerFlag(flagname);
+        if (flag != null && flag.getSet()) return flag;
+
         return null;
     }
 
@@ -255,15 +319,19 @@ public class FlagManager {
     /**
      * Unset a flag in a claim
      *
-     * @param claimID ID of claim
+     * @param claimId ID of claim
      * @param def     Flag definition to remove
      * @return Flag result
      */
-    public SetFlagResult unSetFlag(String claimID, FlagDefinition def) {
-        ConcurrentHashMap<String, Flag> claimFlags = this.flags.get(claimID);
+    public SetFlagResult unSetFlag(String claimId, FlagDefinition def) {
+        ConcurrentHashMap<String, Flag> claimFlags = this.flags.get(claimId);
         if (claimFlags == null || !claimFlags.containsKey(def.getName().toLowerCase())) {
-            return this.setFlag(claimID, def, false);
+            return this.setFlag(claimId, def, false, null);
         } else {
+            try {
+                Claim claim = GriefPrevention.instance.dataStore.getClaim(Long.parseLong(claimId));
+                def.onFlagUnset(claim);
+            } catch (Throwable ignored) {}
             claimFlags.remove(def.getName().toLowerCase());
             return new SetFlagResult(true, def.getUnSetMessage());
         }
@@ -281,24 +349,27 @@ public class FlagManager {
             for (String flagName : flagNames) {
                 String paramsDefault = yaml.getString(claimID + "." + flagName);
                 String params = yaml.getString(claimID + "." + flagName + ".params", paramsDefault);
+                if (FlagsDataStore.PRIOR_CONFIG_VERSION == 0) {
+                    params = MessagingUtil.reserialize(params);
+                }
                 boolean set = yaml.getBoolean(claimID + "." + flagName + ".value", true);
                 FlagDefinition def = this.getFlagDefinitionByName(flagName);
                 if (def != null) {
-                    SetFlagResult result = this.setFlag(claimID, def, set, params);
+                    SetFlagResult result = this.setFlag(claimID, def, set, null, params);
                     if (!result.success) {
                         errors.add(result.message);
                     }
                 }
             }
         }
+        if (errors.isEmpty() && FlagsDataStore.PRIOR_CONFIG_VERSION == 0) save();
         return errors;
     }
 
     public void save() {
         try {
             this.save(FlagsDataStore.flagsFilePath);
-        } catch (Exception e) {
-            Util.log("Failed to save flag data.  Details:");
+        } catch (Throwable e) {
             e.printStackTrace();
         }
     }
@@ -337,13 +408,20 @@ public class FlagManager {
         File file = new File(filepath);
         file.getParentFile().mkdirs();
         file.createNewFile();
-        Files.write(fileContent.getBytes("UTF-8"), file);
+        Files.write(fileContent.getBytes(StandardCharsets.UTF_8), file);
     }
 
+    /**
+     *
+     * @param file
+     * @return A list of errors
+     * @throws IOException
+     * @throws InvalidConfigurationException
+     */
     public List<MessageSpecifier> load(File file) throws IOException, InvalidConfigurationException {
         if (!file.exists()) return this.load("");
 
-        List<String> lines = Files.readLines(file, Charset.forName("UTF-8"));
+        List<String> lines = Files.readLines(file, StandardCharsets.UTF_8);
         StringBuilder builder = new StringBuilder();
         for (String line : lines) {
             builder.append(line).append('\n');

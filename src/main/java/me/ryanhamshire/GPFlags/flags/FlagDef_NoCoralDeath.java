@@ -1,6 +1,7 @@
 package me.ryanhamshire.GPFlags.flags;
 
 import me.ryanhamshire.GPFlags.*;
+import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
@@ -19,7 +20,13 @@ public class FlagDef_NoCoralDeath extends FlagDefinition {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onFade(BlockFadeEvent event) {
         Block block = event.getBlock();
-        if (!Tag.CORALS.isTagged(block.getType())) return;
+        Material material = block.getType();
+        if (!Tag.CORALS.isTagged(material) &&
+                !Tag.CORAL_PLANTS.isTagged(material) &&
+                !Tag.CORAL_BLOCKS.isTagged(material) &&
+                !Tag.WALL_CORALS.isTagged(material)) {
+            return;
+        }
 
         Flag flag = this.getFlagInstanceAtLocation(block.getLocation(), null);
         if (flag == null) return;
@@ -29,22 +36,17 @@ public class FlagDef_NoCoralDeath extends FlagDefinition {
 
     @Override
     public String getName() {
-        return "NoBlockFade";
+        return "NoCoralDeath";
     }
 
     @Override
     public MessageSpecifier getSetMessage(String parameters) {
-        return new MessageSpecifier(Messages.EnableNoBlockFade);
+        return new MessageSpecifier(Messages.EnableNoCoralDeath);
     }
 
     @Override
     public MessageSpecifier getUnSetMessage() {
-        return new MessageSpecifier(Messages.DisableNoBlockFade);
-    }
-
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.WORLD, FlagType.SERVER);
+        return new MessageSpecifier(Messages.DisableNoCoralDeath);
     }
 
 }

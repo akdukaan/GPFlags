@@ -45,9 +45,4 @@ public class FlagDef_KeepLevel extends FlagDefinition {
         return new MessageSpecifier(Messages.DisableKeepLevel);
     }
 
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.WORLD, FlagType.SERVER);
-    }
-
 }

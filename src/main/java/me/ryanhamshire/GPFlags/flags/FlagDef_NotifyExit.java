@@ -1,12 +1,15 @@
 package me.ryanhamshire.GPFlags.flags;
 
 import me.ryanhamshire.GPFlags.*;
-import me.ryanhamshire.GPFlags.util.Util;
+import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import me.ryanhamshire.GriefPrevention.Claim;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
@@ -17,41 +20,39 @@ public class FlagDef_NotifyExit extends PlayerMovementFlagDefinition {
     }
 
     @Override
-    public void onChangeClaim(Player player, Location lastLocation, Location to, Claim claimFrom, Claim claimTo) {
-        if (lastLocation == null) return;
-        Flag flag = this.getFlagInstanceAtLocation(lastLocation, player);
-        if (flag == null) return;
+    public void onChangeClaim(Player player, Location lastLocation, Location to, Claim claimFrom, Claim claimTo, @Nullable Flag flagFrom, @Nullable Flag flagTo) {
+        if (flagFrom == null) return;
 
-        // get specific ExitMessage flag of origin claim and EnterMessage flag of destination claim
-        Flag flagFrom = plugin.getFlagManager().getFlag(claimFrom, this);
-        Flag flagToEnter = plugin.getFlagManager().getFlag(claimTo, plugin.getFlagManager().getFlagDefinitionByName("NotifyEnter"));
-        if (claimTo == null) return;
-
-        // Don't repeat the exit message of a claim in certain cases
-        if (claimFrom != null) {
-            // moving to parent claim, and the sub claim does not have its own exit message
-            if (claimFrom.parent == claimTo && (flagFrom == null || !flagFrom.getSet())) {
-                return;
-            }
-            // moving to sub-claim, and the sub claim does not have its own enter message
-            if (claimTo.parent == claimFrom && (flagToEnter == null || !flagToEnter.getSet())) {
-                return;
-            }
+        if (shouldNotify(player, claimFrom)) {
+            notifyExit(flagFrom, claimFrom, player);
         }
+    }
 
-        UUID ownerID = claimTo.getOwnerID();
-        if (ownerID == null) return;
+    public boolean shouldNotify(@NotNull Player p, @Nullable Claim c) {
+        if (c == null) return false;
+        UUID ownerID = c.getOwnerID();
+        if (ownerID == null) return false;
         Player owner = Bukkit.getPlayer(ownerID);
+        if (owner == null) return false;
+        if (owner.getName().equals(p.getName())) return false;
+        if (!owner.canSee(p)) return false;
+        if (p.getGameMode() == GameMode.SPECTATOR) return false;
+        if (p.hasPermission("gpflags.bypass.notifyexit")) return false;
+        return true;
+    }
+
+    public void notifyExit(@NotNull Flag flag, @NotNull Claim claim, @NotNull Player player) {
+        UUID uuid = claim.getOwnerID();
+        if (uuid == null) return;
+        Player owner = Bukkit.getPlayer(uuid);
         if (owner == null) return;
         if (owner.getName().equals(player.getName())) return;
-        if (!owner.canSee(player)) return;
-        if (player.getGameMode() == GameMode.SPECTATOR) return;
-        if (player.hasPermission("gpflags.bypass.notifyexit")) return;
         String param = flag.parameters;
         if (param == null || param.isEmpty()) {
-            param = "claim " + claimTo.getID();
+            param = "claim " + claim.getID();
         }
-        Util.sendClaimMessage(owner, TextMode.Info, Messages.NotifyEnter, player.getName(), param);
+        MessagingUtil.sendMessage(owner, TextMode.Info, Messages.NotifyExit, player.getName(), param);
+
     }
 
 
@@ -61,7 +62,7 @@ public class FlagDef_NotifyExit extends PlayerMovementFlagDefinition {
     }
 
     @Override
-    public SetFlagResult validateParameters(String parameters) {
+    public SetFlagResult validateParameters(String parameters, CommandSender sender) {
         return new SetFlagResult(true, this.getSetMessage(parameters));
     }
 

@@ -52,9 +52,4 @@ public class FlagDef_NoMcMMOXP extends FlagDefinition {
         return new MessageSpecifier(Messages.DisabledNoMcMMOXP);
     }
 
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.WORLD, FlagType.SERVER);
-    }
-
 }

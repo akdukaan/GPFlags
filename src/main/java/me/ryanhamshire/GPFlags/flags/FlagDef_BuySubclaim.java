@@ -1,14 +1,16 @@
 package me.ryanhamshire.GPFlags.flags;
 
 import me.ryanhamshire.GPFlags.*;
-import me.ryanhamshire.GPFlags.util.Util;
+import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.ClaimPermission;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import org.bukkit.Location;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
@@ -40,7 +42,7 @@ public class FlagDef_BuySubclaim extends PlayerMovementFlagDefinition {
     }
 
     @Override
-    public SetFlagResult validateParameters(String parameters) {
+    public SetFlagResult validateParameters(String parameters, CommandSender sender) {
         if (parameters.isEmpty())
             return new SetFlagResult(false, new MessageSpecifier(Messages.CostRequired));
 
@@ -57,30 +59,14 @@ public class FlagDef_BuySubclaim extends PlayerMovementFlagDefinition {
     }
 
     @Override
-    public void onChangeClaim(Player player, Location lastLocation, Location to, Claim claimFrom, Claim claimTo) {
-        Flag flag = this.getFlagInstanceAtLocation(to, player);
-        if (flag == null) return;
+    public void onChangeClaim(Player player, Location lastLocation, Location to, Claim claimFrom, Claim claimTo, @Nullable Flag flagFrom, @Nullable Flag flagTo) {
+        if (flagTo == null) return;
 
         if (claimTo == null) return;
         if (claimTo.parent == null) return;
         if (claimTo.getPermission(player.getUniqueId().toString()) == ClaimPermission.Build) return;
         if (player.getUniqueId().equals(claimTo.getOwnerID())) return;
 
-        Util.sendMessage(player, TextMode.Info, Messages.SubclaimPrice, flag.parameters);
-    }
-
-    @EventHandler
-    public void onJoin(PlayerJoinEvent e) {
-        Player player = e.getPlayer();
-        Flag flag = this.getFlagInstanceAtLocation(player.getLocation(), player);
-        if (flag == null) return;
-
-        Claim claim = GriefPrevention.instance.dataStore.getClaimAt(player.getLocation(), false, null);
-        if (claim == null) return;
-        if (claim.parent == null) return;
-        if (claim.getPermission(e.getPlayer().getUniqueId().toString()) == ClaimPermission.Build) return;
-        if (player.getUniqueId().equals(claim.getOwnerID())) return;
-
-        Util.sendMessage(player, TextMode.Info, Messages.SubclaimPrice, flag.parameters);
+        MessagingUtil.sendMessage(player, TextMode.Info, Messages.SubclaimPrice, flagTo.parameters);
     }
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import me.ryanhamshire.GPFlags.util.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -26,7 +27,6 @@ import me.ryanhamshire.GPFlags.GPFlags;
 import me.ryanhamshire.GPFlags.MessageSpecifier;
 import me.ryanhamshire.GPFlags.Messages;
 import me.ryanhamshire.GriefPrevention.Claim;
-import me.ryanhamshire.GriefPrevention.ClaimPermission;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import me.ryanhamshire.GriefPrevention.PlayerData;
 
@@ -57,7 +57,7 @@ public class FlagDef_ViewContainers extends FlagDefinition {
         Claim claim = GriefPrevention.instance.dataStore.getClaimAt(block.getLocation(), false, playerData.lastClaim);
         if (claim == null) return;
         
-        if ((claim.ownerID != null && claim.ownerID.equals(player.getUniqueId())) || claim.hasExplicitPermission(player, ClaimPermission.Inventory)) {
+        if (Util.canInventory(claim, player)) {
             return;
         }
         
@@ -105,7 +105,7 @@ public class FlagDef_ViewContainers extends FlagDefinition {
 
     @Override
     public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM);
+        return Arrays.asList(FlagType.CLAIM, FlagType.DEFAULT);
     }
     
     public static Set<Inventory> getViewingInventories() {

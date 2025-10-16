@@ -46,9 +46,4 @@ public class FlagDef_NoFireSpread extends FlagDefinition {
         return new MessageSpecifier(Messages.DisabledNoFireSpread);
     }
 
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.WORLD, FlagType.SERVER);
-    }
-
 }

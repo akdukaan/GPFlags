@@ -6,6 +6,7 @@ import me.ryanhamshire.GPFlags.GPFlags;
 import me.ryanhamshire.GPFlags.MessageSpecifier;
 import me.ryanhamshire.GPFlags.Messages;
 import me.ryanhamshire.GPFlags.TextMode;
+import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import me.ryanhamshire.GPFlags.util.Util;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
@@ -20,6 +21,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -53,20 +55,20 @@ public class FlagDef_NoOpenDoors extends FlagDefinition {
                         for (String param : params) {
                             if (param.equalsIgnoreCase("doors") && block.getBlockData() instanceof Door) {
                                 e.setCancelled(true);
-                                Util.sendClaimMessage(player, TextMode.Err, Messages.NoOpenDoorMessage, param);
+                                MessagingUtil.sendMessage(player, TextMode.Err, Messages.NoOpenDoorMessage, param);
                             }
                             if (param.equalsIgnoreCase("trapdoors") && block.getBlockData() instanceof TrapDoor) {
                                 e.setCancelled(true);
-                                Util.sendClaimMessage(player, TextMode.Err, Messages.NoOpenDoorMessage, param);
+                                MessagingUtil.sendMessage(player, TextMode.Err, Messages.NoOpenDoorMessage, param);
                             }
                             if (param.equalsIgnoreCase("gates") && block.getBlockData() instanceof Gate) {
                                 e.setCancelled(true);
-                                Util.sendClaimMessage(player, TextMode.Err, Messages.NoOpenDoorMessage, param);
+                                MessagingUtil.sendMessage(player, TextMode.Err, Messages.NoOpenDoorMessage, param);
                             }
                         }
                     } else {
                         e.setCancelled(true);
-                        Util.sendClaimMessage(player, TextMode.Err, Messages.NoOpenDoorMessage, "doors");
+                        MessagingUtil.sendMessage(player, TextMode.Err, Messages.NoOpenDoorMessage, "doors");
                     }
                 }
             }
@@ -90,11 +92,6 @@ public class FlagDef_NoOpenDoors extends FlagDefinition {
     @Override
     public MessageSpecifier getUnSetMessage() {
         return new MessageSpecifier(Messages.DisableNoOpenDoor);
-    }
-
-    @Override
-    public List<FlagType> getFlagType() {
-        return Collections.singletonList(FlagType.CLAIM);
     }
 
 }

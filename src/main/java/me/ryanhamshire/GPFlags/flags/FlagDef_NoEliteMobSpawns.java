@@ -39,9 +39,4 @@ public class FlagDef_NoEliteMobSpawns extends FlagDefinition {
         return new MessageSpecifier(Messages.DisableNoEliteMobSpawns);
     }
 
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.WORLD, FlagType.SERVER);
-    }
-
 }

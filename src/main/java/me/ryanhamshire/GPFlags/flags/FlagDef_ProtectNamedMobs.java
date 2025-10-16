@@ -1,6 +1,7 @@
 package me.ryanhamshire.GPFlags.flags;
 
 import me.ryanhamshire.GPFlags.*;
+import me.ryanhamshire.GPFlags.hooks.MythicMobsHook;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.ClaimPermission;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
@@ -26,8 +27,13 @@ public class FlagDef_ProtectNamedMobs extends FlagDefinition {
 
         Flag flag = this.getFlagInstanceAtLocation(entity.getLocation(), null);
         if (flag == null) return;
-        if (entity.getType() == EntityType.PLAYER) return;
         if (entity.getCustomName() == null) return;
+
+        EntityType eType = entity.getType();
+        if (eType == EntityType.PLAYER) return;
+        if (eType == EntityType.ARMOR_STAND) return;
+        if (eType == EntityType.ITEM_FRAME) return;
+        if (eType == EntityType.GLOW_ITEM_FRAME) return;
         if (MythicMobsHook.isMythicMob(entity)) return;
 
         Entity damager = event.getDamager();
@@ -59,7 +65,7 @@ public class FlagDef_ProtectNamedMobs extends FlagDefinition {
 
     @Override
     public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.SERVER, FlagType.WORLD);
+        return Arrays.asList(FlagType.CLAIM, FlagType.DEFAULT);
     }
 
 }

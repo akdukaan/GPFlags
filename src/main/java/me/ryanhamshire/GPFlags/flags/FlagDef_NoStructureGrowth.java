@@ -37,9 +37,4 @@ public class FlagDef_NoStructureGrowth extends FlagDefinition {
         return new MessageSpecifier(Messages.DisableNoStructureGrowth);
     }
 
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.WORLD, FlagType.SERVER);
-    }
-
 }

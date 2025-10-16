@@ -7,6 +7,7 @@ import me.ryanhamshire.GPFlags.GPFlags;
 import me.ryanhamshire.GPFlags.MessageSpecifier;
 import me.ryanhamshire.GPFlags.Messages;
 import me.ryanhamshire.GPFlags.TextMode;
+import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import me.ryanhamshire.GPFlags.util.Util;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
@@ -16,6 +17,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -34,28 +36,31 @@ public class FlagDef_NoEnderPearl extends FlagDefinition {
         Flag flag = this.getFlagInstanceAtLocation(event.getFrom(), event.getPlayer());
         if (flag != null) {
             Claim claim = GriefPrevention.instance.dataStore.getClaimAt(event.getFrom(), false, null);
-            if (!Util.shouldBypass(player, claim, flag)) {
-                event.setCancelled(true);
-                String owner = claim.getOwnerName();
+            if (Util.shouldBypass(player, claim, flag)) return;
 
-                String msg = new FlagsDataStore().getMessage(Messages.NoEnderPearlInClaim);
-                Util.sendClaimMessage(player, TextMode.Warn, msg.replace("{o}", owner).replace("{p}", player.getName()));
-                return;
-            }
+            event.setCancelled(true);
+            String owner = claim.getOwnerName();
+            String playerName = player.getName();
+
+            String msg = new FlagsDataStore().getMessage(Messages.NoEnderPearlInClaim);
+            msg = msg.replace("{p}", playerName).replace("{o}", owner);
+            msg = msg.replace("{0}", playerName).replace("{1}", owner);
+            MessagingUtil.sendMessage(player, TextMode.Warn + msg);
+            return;
+
         }
 
         flag = this.getFlagInstanceAtLocation(event.getTo(), event.getPlayer());
         if (flag != null) {
             Claim claim = GriefPrevention.instance.dataStore.getClaimAt(event.getTo(), false, null);
-            if (!Util.shouldBypass(player, claim, flag)) {
-                event.setCancelled(true);
-                String owner = claim.getOwnerName();
+            if (!Util.shouldBypass(player, claim, flag)) return;
 
-                String msg = new FlagsDataStore().getMessage(Messages.NoEnderPearlToClaim);
-                Util.sendClaimMessage(player, TextMode.Warn, msg.replace("{o}", owner).replace("{p}", player.getName()));
-            }
+            event.setCancelled(true);
+            String owner = claim.getOwnerName();
+
+            String msg = new FlagsDataStore().getMessage(Messages.NoEnderPearlToClaim);
+            MessagingUtil.sendMessage(player, TextMode.Warn + msg.replace("{o}", owner).replace("{p}", player.getName()));
         }
-
     }
 
     @Override
@@ -75,7 +80,7 @@ public class FlagDef_NoEnderPearl extends FlagDefinition {
 
     @Override
     public List<FlagType> getFlagType() {
-        return Collections.singletonList(FlagType.CLAIM);
+        return Arrays.asList(FlagType.CLAIM, FlagType.DEFAULT);
     }
 
 }

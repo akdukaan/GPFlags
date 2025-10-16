@@ -46,9 +46,4 @@ public class FlagDef_NoAnvilDamage extends FlagDefinition {
         return new MessageSpecifier(Messages.DisableNoAnvilDamage);
     }
 
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.WORLD, FlagType.SERVER);
-    }
-
 }

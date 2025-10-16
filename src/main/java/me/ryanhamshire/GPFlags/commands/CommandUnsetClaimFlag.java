@@ -6,11 +6,11 @@ import me.ryanhamshire.GPFlags.SetFlagResult;
 import me.ryanhamshire.GPFlags.TextMode;
 import me.ryanhamshire.GPFlags.flags.FlagDef_ChangeBiome;
 import me.ryanhamshire.GPFlags.flags.FlagDefinition;
+import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import me.ryanhamshire.GPFlags.util.Util;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import me.ryanhamshire.GriefPrevention.PlayerData;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -25,7 +25,7 @@ public class CommandUnsetClaimFlag implements TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
         if (!sender.hasPermission("gpflags.command.unsetclaimflag")) {
-            Util.sendMessage(sender, TextMode.Err, Messages.NoCommandPermission, command.toString());
+            MessagingUtil.sendMessage(sender, TextMode.Err, Messages.NoCommandPermission, command.toString());
             return true;
         }
         if (args.length < 1) return false;
@@ -36,41 +36,41 @@ public class CommandUnsetClaimFlag implements TabExecutor {
         Claim claim = GriefPrevention.instance.dataStore.getClaimAt(player.getLocation(), false, playerData.lastClaim);
 
         if (claim == null) {
-            Util.sendMessage(player, TextMode.Err, Messages.StandInAClaim);
+            MessagingUtil.sendMessage(player, TextMode.Err, Messages.StandInAClaim);
             return true;
         }
 
         Long claimID = claim.getID();
         if (claimID == null || claimID == -1) {
-            Util.sendMessage(player, TextMode.Err, Messages.UpdateGPForSubdivisionFlags);
+            MessagingUtil.sendMessage(player, TextMode.Err, Messages.UpdateGPForSubdivisionFlags);
             return true;
         }
         String flagName = args[0];
         GPFlags plugin = GPFlags.getInstance();
         FlagDefinition def = plugin.getFlagManager().getFlagDefinitionByName(flagName);
         if (def == null) {
-            Util.sendMessage(player, TextMode.Err, Util.getFlagDefsMessage(player));
+            MessagingUtil.sendMessage(player, TextMode.Err, Messages.InvalidFlagDefName, Util.getAvailableFlags(player));
             return true;
         }
 
         if (!sender.hasPermission("gpflags.flag." + def.getName())) {
-            Util.sendMessage(player, TextMode.Err, Messages.NoFlagPermission, def.getName());
+            MessagingUtil.sendMessage(player, TextMode.Err, Messages.NoFlagPermission, def.getName());
             return true;
         }
 
-        if (!Util.canManageFlags(player, claim)) {
-            Util.sendMessage(player, TextMode.Err, Messages.NotYourClaim);
+        if (!Util.canEdit(player, claim)) {
+            MessagingUtil.sendMessage(player, TextMode.Err, Messages.NotYourClaim);
             return true;
         }
 
         if (flagName.equalsIgnoreCase("ChangeBiome")) {
             FlagDef_ChangeBiome flagD = ((FlagDef_ChangeBiome) plugin.getFlagManager().getFlagDefinitionByName("changebiome"));
-            flagD.resetBiome(claim.getID());
+//            flagD.resetBiome(claim);
         }
 
         SetFlagResult result = plugin.getFlagManager().unSetFlag(claimID.toString(), def);
-        ChatColor color = result.isSuccess() ? TextMode.Success : TextMode.Err;
-        Util.sendMessage(player, color, result.getMessage().getMessageID(), result.getMessage().getMessageParams());
+        String color = result.isSuccess() ? TextMode.Success : TextMode.Err;
+        MessagingUtil.sendMessage(player, color, result.getMessage().getMessageID(), result.getMessage().getMessageParams());
         if (result.isSuccess()) plugin.getFlagManager().save();
 
         return true;

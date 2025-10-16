@@ -1,7 +1,8 @@
 package me.ryanhamshire.GPFlags.flags;
 
 import me.ryanhamshire.GPFlags.*;
-import me.ryanhamshire.GPFlags.util.Util;
+import me.ryanhamshire.GPFlags.util.MessagingUtil;
+import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
@@ -9,7 +10,7 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 import java.util.Arrays;
 import java.util.List;
 
-public class FlagDef_SpawnReasonWhitelist extends FlagDefinition implements Listener {
+public class FlagDef_SpawnReasonWhitelist extends FlagDefinition {
 
     public FlagDef_SpawnReasonWhitelist(FlagManager manager, GPFlags plugin) {
         super(manager, plugin);
@@ -24,7 +25,6 @@ public class FlagDef_SpawnReasonWhitelist extends FlagDefinition implements List
             try {
                 reason = CreatureSpawnEvent.SpawnReason.valueOf(string.toUpperCase());
             } catch (IllegalArgumentException ex) {
-                Util.log("Error with SpawnReasonWhitelist params at " + event.getLocation());
                 return;
             }
             if (reason != event.getSpawnReason()) {
@@ -35,7 +35,7 @@ public class FlagDef_SpawnReasonWhitelist extends FlagDefinition implements List
     }
 
     @Override
-    public SetFlagResult validateParameters(String parameters) {
+    public SetFlagResult validateParameters(String parameters, CommandSender sender) {
         if (parameters.isEmpty()) {
             return new SetFlagResult(false, new MessageSpecifier(Messages.SpecifySpawnReason));
         }
@@ -62,11 +62,6 @@ public class FlagDef_SpawnReasonWhitelist extends FlagDefinition implements List
     @Override
     public MessageSpecifier getUnSetMessage() {
         return new MessageSpecifier(Messages.DisabledSpawnReasonWhitelist);
-    }
-
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.WORLD, FlagType.SERVER);
     }
 
 

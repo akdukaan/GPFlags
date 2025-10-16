@@ -3,14 +3,11 @@ package me.ryanhamshire.GPFlags.commands;
 import me.ryanhamshire.GPFlags.*;
 import me.ryanhamshire.GPFlags.flags.FlagDef_ChangeBiome;
 import me.ryanhamshire.GPFlags.flags.FlagDefinition;
+import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import me.ryanhamshire.GPFlags.util.Util;
 import me.ryanhamshire.GriefPrevention.Claim;
-import me.ryanhamshire.GriefPrevention.ClaimPermission;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import me.ryanhamshire.GriefPrevention.PlayerData;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -26,12 +23,12 @@ public class CommandSetClaimFlag implements TabExecutor {
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
         // Check perms
         if (!commandSender.hasPermission("gpflags.command.setclaimflag")) {
-            Util.sendMessage(commandSender, TextMode.Err, Messages.NoCommandPermission, command.toString());
+            MessagingUtil.sendMessage(commandSender, TextMode.Err, Messages.NoCommandPermission, command.toString());
             return true;
         }
         // Check player sender
         if (!(commandSender instanceof Player)) {
-            Util.sendMessage(commandSender, TextMode.Warn, Messages.PlayerOnlyCommand, command.toString());
+            MessagingUtil.sendMessage(commandSender, TextMode.Warn, Messages.PlayerOnlyCommand, command.toString());
             return true;
         }
         Player player = ((Player) commandSender);
@@ -44,19 +41,19 @@ public class CommandSetClaimFlag implements TabExecutor {
         GPFlags gpflags = GPFlags.getInstance();
         FlagDefinition def = gpflags.getFlagManager().getFlagDefinitionByName(flagName);
         if (def == null) {
-            Util.sendMessage(player, TextMode.Warn, Util.getFlagDefsMessage(player));
+            MessagingUtil.sendMessage(player, TextMode.Warn, Messages.InvalidFlagDefName, Util.getAvailableFlags(player));
             return true;
         }
 
         // Check perms for that specific flag
-        if (!player.hasPermission("gpflags.flag." + def.getName())) {
-            Util.sendMessage(player, TextMode.Err, Messages.NoFlagPermission, flagName);
+        if (!player.hasPermission("gpflags.flag." + flagName)) {
+            MessagingUtil.sendMessage(player, TextMode.Err, Messages.NoFlagPermission, flagName);
             return true;
         }
 
         // Check that the flag can be used in claims
         if (!def.getFlagType().contains(FlagDefinition.FlagType.CLAIM)) {
-            Util.sendMessage(player, TextMode.Err, Messages.NoFlagInClaim);
+            MessagingUtil.sendMessage(player, TextMode.Err, Messages.NoFlagInClaim);
             return true;
         }
 
@@ -64,13 +61,13 @@ public class CommandSetClaimFlag implements TabExecutor {
         PlayerData playerData = GriefPrevention.instance.dataStore.getPlayerData(player.getUniqueId());
         Claim claim = GriefPrevention.instance.dataStore.getClaimAt(player.getLocation(), false, playerData.lastClaim);
         if (claim == null) {
-            Util.sendMessage(commandSender, TextMode.Err, Messages.StandInAClaim);
+            MessagingUtil.sendMessage(commandSender, TextMode.Err, Messages.StandInAClaim);
             return true;
         }
 
         // Check that they can set flags in the area
-        if (!Util.canManageFlags(player, claim)) {
-            Util.sendMessage(player, TextMode.Err, Messages.NotYourClaim);
+        if (!Util.canEdit(player, claim)) {
+            MessagingUtil.sendMessage(player, TextMode.Err, Messages.NotYourClaim);
             return true;
         }
 
@@ -83,13 +80,13 @@ public class CommandSetClaimFlag implements TabExecutor {
         for (Flag flag : flags) {
             if (flagName.equalsIgnoreCase("OwnerFly")) {
                 if (flag.getFlagDefinition().getName().equalsIgnoreCase("OwnerMemberFly")) {
-                    Util.sendMessage(player, TextMode.Warn, Messages.NoOwnerFlag);
+                    MessagingUtil.sendMessage(player, TextMode.Warn, Messages.NoOwnerFlag);
                     return true;
                 }
             }
             if (flagName.equalsIgnoreCase("OwnerMemberFly")) {
                 if (flag.getFlagDefinition().getName().equalsIgnoreCase("OwnerFly")) {
-                    Util.sendMessage(player, TextMode.Warn, Messages.NoOwnerFlag);
+                    MessagingUtil.sendMessage(player, TextMode.Warn, Messages.NoOwnerFlag);
                     return true;
                 }
             }
@@ -108,23 +105,23 @@ public class CommandSetClaimFlag implements TabExecutor {
             if (params.length == 0) return false;
             for (String type : params[0].split(";")) {
                 if (!player.hasPermission("gpflags.flag.nomobspawnstype." + type)) {
-                    Util.sendMessage(player, TextMode.Err, Messages.MobTypePerm, type);
+                    MessagingUtil.sendMessage(player, TextMode.Err, Messages.MobTypePerm, type);
                     return true;
                 }
             }
         }
 
-        // If they are trying to use subcdivisions with an old GP version, deny it.
+        // If they are trying to use subdivisions with an old GP version, deny it.
         Long claimID = claim.getID();
         if (claimID == null || claimID == -1) {
-            Util.sendMessage(player, TextMode.Err, Messages.UpdateGPForSubdivisionFlags);
+            MessagingUtil.sendMessage(player, TextMode.Err, Messages.UpdateGPForSubdivisionFlags);
             return true;
         }
 
         // Change the flag in the file storage
-        SetFlagResult result = gpflags.getFlagManager().setFlag(claimID.toString(), def, true, params);
-        ChatColor color = result.isSuccess() ? TextMode.Success : TextMode.Err;
-        Util.sendMessage(player, color, result.getMessage().getMessageID(), result.getMessage().getMessageParams());
+        SetFlagResult result = gpflags.getFlagManager().setFlag(claimID.toString(), def, true, commandSender, params);
+        String color = result.isSuccess() ? TextMode.Success : TextMode.Err;
+        MessagingUtil.sendMessage(player, color, result.getMessage().getMessageID(), result.getMessage().getMessageParams());
         if (result.isSuccess()) gpflags.getFlagManager().save();
 
         return true;

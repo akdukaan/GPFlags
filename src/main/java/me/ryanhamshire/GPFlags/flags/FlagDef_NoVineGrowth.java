@@ -48,9 +48,4 @@ public class FlagDef_NoVineGrowth extends FlagDefinition {
         return new MessageSpecifier(Messages.DisableNoVineGrowth);
     }
 
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.WORLD, FlagType.SERVER);
-    }
-
 }

@@ -6,6 +6,7 @@ import me.ryanhamshire.GPFlags.GPFlags;
 import me.ryanhamshire.GPFlags.MessageSpecifier;
 import me.ryanhamshire.GPFlags.Messages;
 import me.ryanhamshire.GPFlags.SetFlagResult;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -38,6 +39,7 @@ public class FlagDef_NoMobSpawnsType extends FlagDefinition {
 
         if (isNotAllowed(type, flag)) {
             CreatureSpawnEvent.SpawnReason reason = event.getSpawnReason();
+            if (reason == CreatureSpawnEvent.SpawnReason.SLIME_SPLIT) return;
             if (reason == CreatureSpawnEvent.SpawnReason.SPAWNER || reason == CreatureSpawnEvent.SpawnReason.SPAWNER_EGG) {
                 event.getEntity().setMetadata(this.ALLOW_TARGET_TAG, new FixedMetadataValue(GPFlags.getInstance(), Boolean.TRUE));
                 return;
@@ -81,7 +83,7 @@ public class FlagDef_NoMobSpawnsType extends FlagDefinition {
     }
 
     @Override
-    public SetFlagResult validateParameters(String parameters) {
+    public SetFlagResult validateParameters(String parameters, CommandSender sender) {
         if (parameters.isEmpty()) {
             return new SetFlagResult(false, new MessageSpecifier(Messages.MobTypeRequired));
         }
@@ -101,11 +103,6 @@ public class FlagDef_NoMobSpawnsType extends FlagDefinition {
     @Override
     public MessageSpecifier getUnSetMessage() {
         return new MessageSpecifier(Messages.DisabledNoMobSpawnsType);
-    }
-
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.WORLD, FlagType.CLAIM, FlagType.SERVER);
     }
 
     private boolean isNotAllowed(EntityType type, Flag flag) {

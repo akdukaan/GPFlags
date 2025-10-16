@@ -10,6 +10,7 @@ import me.ryanhamshire.GriefPrevention.events.SaveTrappedPlayerEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
 
 import java.util.Arrays;
@@ -39,7 +40,7 @@ public class FlagDef_TrappedDestination extends FlagDefinition {
     }
 
     @Override
-    public SetFlagResult validateParameters(String parameters) {
+    public SetFlagResult validateParameters(String parameters, CommandSender sender) {
         String[] params = parameters.split(" ");
 
         if (params.length != 4) {
@@ -74,6 +75,6 @@ public class FlagDef_TrappedDestination extends FlagDefinition {
 
     @Override
     public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.WORLD, FlagType.SERVER);
+        return Arrays.asList(FlagType.CLAIM, FlagType.DEFAULT);
     }
 }

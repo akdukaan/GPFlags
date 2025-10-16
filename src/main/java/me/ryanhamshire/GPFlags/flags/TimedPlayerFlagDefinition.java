@@ -65,7 +65,7 @@ public abstract class TimedPlayerFlagDefinition extends FlagDefinition implement
         while ((player = playerQueue.poll()) != null) {
             try {
                 this.processPlayer(player);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 if (player.isOnline()) {
                     e.printStackTrace();
                 }

@@ -35,9 +35,14 @@ public class FlagDef_InfiniteArrows extends FlagDefinition {
         if (!(projectile instanceof Arrow)) return;
         Arrow arrow = (Arrow) projectile;
 
-        event.setConsumeItem(false);
+        try {
+            event.setConsumeArrow(false);
+        } catch (NoSuchMethodError error) {
+            event.setConsumeItem(false);
+        }
         player.updateInventory();
         arrow.setPickupStatus(AbstractArrow.PickupStatus.DISALLOWED);
+
     }
 
     @Override
@@ -53,11 +58,6 @@ public class FlagDef_InfiniteArrows extends FlagDefinition {
     @Override
     public MessageSpecifier getUnSetMessage() {
         return new MessageSpecifier(Messages.DisableInfiniteArrows);
-    }
-
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.WORLD, FlagType.SERVER);
     }
 
 }

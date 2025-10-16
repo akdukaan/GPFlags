@@ -5,12 +5,7 @@ import me.ryanhamshire.GPFlags.FlagManager;
 import me.ryanhamshire.GPFlags.GPFlags;
 import me.ryanhamshire.GPFlags.MessageSpecifier;
 import me.ryanhamshire.GPFlags.Messages;
-import org.bukkit.entity.Animals;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
-import org.bukkit.entity.WaterMob;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -29,30 +24,33 @@ public class FlagDef_NoMobDamage extends FlagDefinition {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityDamage(EntityDamageEvent event) {
+        // check flag
         Entity entity = event.getEntity();
-
         Flag flag = this.getFlagInstanceAtLocation(entity.getLocation(), null);
         if (flag == null) return;
 
         // fix for GP discussion https://github.com/TechFortress/GriefPrevention/issues/1481
-        if (event.getDamage() == 0 && event.getCause() == DamageCause.CUSTOM) return;
-
         DamageCause cause = event.getCause();
-        if (cause == DamageCause.ENTITY_ATTACK || cause == DamageCause.PROJECTILE) {
+        if (event.getDamage() == 0 && cause == DamageCause.CUSTOM) return;
+
+        // Always allow cramming damage
+        if (cause == DamageCause.CRAMMING) return;
+
+        // Always allow attacks to players
+        if (entity instanceof Player) return;
+
+        // Always allow attacks from players
+        if (event instanceof EntityDamageByEntityEvent) {
             EntityDamageByEntityEvent event2 = (EntityDamageByEntityEvent) event;
             Entity attacker = event2.getDamager();
-
             if (attacker.getType() == EntityType.PLAYER) return;
-
             if (attacker instanceof Projectile) {
                 ProjectileSource source = ((Projectile) attacker).getShooter();
                 if (source instanceof Player) return;
             }
         }
 
-        if (cause == DamageCause.CRAMMING) return;
-
-        if (entity instanceof Animals || entity instanceof WaterMob || entity.getType() == EntityType.VILLAGER || entity.getCustomName() != null) {
+        if (entity instanceof LivingEntity) {
             event.setCancelled(true);
         }
     }
@@ -70,11 +68,6 @@ public class FlagDef_NoMobDamage extends FlagDefinition {
     @Override
     public MessageSpecifier getUnSetMessage() {
         return new MessageSpecifier(Messages.EnableMobDamage);
-    }
-
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.WORLD, FlagType.SERVER);
     }
 
 }

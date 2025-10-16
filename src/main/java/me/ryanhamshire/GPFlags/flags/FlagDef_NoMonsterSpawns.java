@@ -13,9 +13,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 
-import java.util.Arrays;
-import java.util.List;
-
 public class FlagDef_NoMonsterSpawns extends FlagDefinition {
 
     public FlagDef_NoMonsterSpawns(FlagManager manager, GPFlags plugin) {
@@ -24,18 +21,17 @@ public class FlagDef_NoMonsterSpawns extends FlagDefinition {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onEntitySpawn(CreatureSpawnEvent event) {
+        Flag flag = this.getFlagInstanceAtLocation(event.getLocation(), null);
+        if (flag == null) return;
+
         LivingEntity entity = event.getEntity();
         if (!Util.isMonster(entity)) return;
 
         SpawnReason reason = event.getSpawnReason();
+        if (reason == SpawnReason.SLIME_SPLIT) return;
 
         WorldSettings settings = this.settingsManager.get(event.getEntity().getWorld());
-        if (settings.noMonsterSpawnIgnoreSpawners && (reason == SpawnReason.SPAWNER || reason == SpawnReason.SPAWNER_EGG)) {
-            return;
-        }
-
-        Flag flag = this.getFlagInstanceAtLocation(event.getLocation(), null);
-        if (flag == null) return;
+        if (settings.noMonsterSpawnIgnoreSpawners && Util.isSpawnerReason(reason)) return;
 
         event.setCancelled(true);
     }
@@ -53,11 +49,6 @@ public class FlagDef_NoMonsterSpawns extends FlagDefinition {
     @Override
     public MessageSpecifier getUnSetMessage() {
         return new MessageSpecifier(Messages.EnableMonsterSpawns);
-    }
-
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.WORLD, FlagType.SERVER);
     }
 
 }

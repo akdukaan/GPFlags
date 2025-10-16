@@ -45,9 +45,4 @@ public class FlagDef_KeepInventory extends FlagDefinition {
         return new MessageSpecifier(Messages.DisableKeepInventory);
     }
 
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.WORLD, FlagType.SERVER);
-    }
-
 }

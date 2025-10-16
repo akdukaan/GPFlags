@@ -10,13 +10,15 @@ import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import me.ryanhamshire.GriefPrevention.PlayerData;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -29,6 +31,7 @@ public abstract class FlagDefinition implements Listener {
     WorldSettingsManager settingsManager;
     private int instances = 0;
     protected GPFlags plugin;
+    protected Claim cachedClaim = null;
 
     public FlagDefinition(FlagManager manager, GPFlags plugin) {
         this.flagManager = manager;
@@ -38,7 +41,7 @@ public abstract class FlagDefinition implements Listener {
 
     public abstract String getName();
 
-    public SetFlagResult validateParameters(String parameters) {
+    public SetFlagResult validateParameters(String parameters, @Nullable CommandSender sender) {
         return new SetFlagResult(true, this.getSetMessage(parameters));
     }
 
@@ -46,58 +49,41 @@ public abstract class FlagDefinition implements Listener {
 
     public abstract MessageSpecifier getUnSetMessage();
 
-    public abstract List<FlagType> getFlagType();
+    public List<FlagType> getFlagType() {
+        return Arrays.asList(FlagType.CLAIM, FlagType.DEFAULT, FlagType.WORLD, FlagType.SERVER);
+    }
 
+    // Called when a flag is set to false/true, etc.
     public void onFlagSet(Claim claim, String params) {
     }
 
+    // Called when the flag is killed
     public void onFlagUnset(Claim claim) {
     }
 
     /**
      * Get an instance of a flag at a location
-     *
      * @param location Location for checking for flag
      * @param player Player for checking cached claims
-     * @return Instance of flag at location if set, otherwise null
+     * @return Logical instance of flag at location
      */
     public Flag getFlagInstanceAtLocation(@NotNull Location location, @Nullable Player player) {
-        Flag flag = null;
-        if (GriefPrevention.instance.claimsEnabledForWorld(location.getWorld())) {
-            Claim cachedClaim = null;
-            PlayerData playerData = null;
-            if (player != null) {
-                playerData = GriefPrevention.instance.dataStore.getPlayerData(player.getUniqueId());
-                cachedClaim = playerData.lastClaim;
-            }
-
-            Claim claim = GriefPrevention.instance.dataStore.getClaimAt(location, false, cachedClaim);
-            if (claim != null) {
-                if (playerData != null) {
-                    playerData.lastClaim = claim;
-                }
-
-                flag = this.flagManager.getFlag(claim.getID().toString(), this);
-                if (flag != null && !flag.getSet()) return null;
-
-                if (flag == null && claim.parent != null) {
-                    flag = this.flagManager.getFlag(claim.parent.getID().toString(), this);
-                    if (flag != null && !flag.getSet()) return null;
-                }
-            }
+        if (cachedClaim == null && player != null) {
+            PlayerData playerData = GriefPrevention.instance.dataStore.getPlayerData(player.getUniqueId());
+            cachedClaim = playerData.lastClaim;
         }
+        Claim claim = GriefPrevention.instance.dataStore.getClaimAt(location, false, false, cachedClaim);
+        cachedClaim = claim;
+        return flagManager.getEffectiveFlag(location, this.getName(), claim);
+    }
 
-        if (flag == null) {
-            flag = this.flagManager.getFlag(location.getWorld().getName(), this);
-            if (flag != null && !flag.getSet()) return null;
-        }
+    public Flag getEffectiveFlag(@Nullable Claim claim, @NotNull World world) {
+        return flagManager.getEffectiveFlag(this.getName(), claim, world);
+    }
 
-        if (flag == null) {
-            flag = this.flagManager.getFlag("everywhere", this);
-            if (flag != null && !flag.getSet()) return null;
-        }
-
-        return flag;
+    public Flag getEffectiveFlag(@Nullable Claim claim, Location location) {
+        if (location == null) return null;
+        return flagManager.getEffectiveFlag(this.getName(), claim, location.getWorld());
     }
 
     public void incrementInstances() {
@@ -109,7 +95,7 @@ public abstract class FlagDefinition implements Listener {
     private boolean hasRegisteredEvents = false;
     
     public void firstTimeSetup() {
-        if(hasRegisteredEvents) return;
+        if (hasRegisteredEvents) return;
         hasRegisteredEvents = true;
         Bukkit.getServer().getPluginManager().registerEvents(this, this.plugin);
     }
@@ -125,15 +111,19 @@ public abstract class FlagDefinition implements Listener {
         /**
          * Flag can be set in a claim
          */
-        CLAIM("&aCLAIM"),
+        CLAIM("<green>CLAIM"),
         /**
          * Flag can be set for an entire world
          */
-        WORLD("&6WORLD"),
+        WORLD("<gold>WORLD"),
         /**
          * Flag can bet set for the entire server
          */
-        SERVER("&3SERVER");
+        SERVER("<dark_aqua>SERVER"),
+        /**
+         * Flag can be set as a default flag
+         */
+        DEFAULT("<YELLOW>DEFAULT");
 
         String name;
 
@@ -143,7 +133,7 @@ public abstract class FlagDefinition implements Listener {
 
         @Override
         public String toString() {
-            return ChatColor.translateAlternateColorCodes('&', name + "&7");
+            return name + "<grey>";
         }
     }
 

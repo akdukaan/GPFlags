@@ -41,9 +41,4 @@ public class FlagDef_NoBlockSpread extends FlagDefinition {
         return new MessageSpecifier(Messages.DisableNoBlockSpread);
     }
 
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.WORLD, FlagType.SERVER);
-    }
-
 }

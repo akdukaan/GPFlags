@@ -25,7 +25,7 @@ public class FlagDef_NoFluidFlow extends FlagDefinition {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockFromTo(BlockFromToEvent event) {
         Location location = event.getBlock().getLocation();
-        if (this.previousLocation != null && location.equals(this.previousLocation)) {
+        if (location.equals(this.previousLocation)) {
             if (!this.previousWasCancelled) return;
             event.setCancelled(true);
             return;
@@ -54,11 +54,6 @@ public class FlagDef_NoFluidFlow extends FlagDefinition {
     @Override
     public MessageSpecifier getUnSetMessage() {
         return new MessageSpecifier(Messages.DisableNoFluidFlow);
-    }
-
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.WORLD, FlagType.SERVER);
     }
 
 }

@@ -8,7 +8,8 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.player.PlayerEvent;
 
 /**
- * Called when a player enters/exits a claim
+ * Called when a player tries to change regions.
+ * It's expected that the same code that calls this event will also handle what happens when this gets cancelled
  */
 @SuppressWarnings("unused")
 public class PlayerPreClaimBorderEvent extends PlayerEvent implements Cancellable {
@@ -28,7 +29,7 @@ public class PlayerPreClaimBorderEvent extends PlayerEvent implements Cancellabl
 
     /**
      * Get the claim the player exited
-     *
+     * Null if there is no claim at the location
      * @return Claim the player exited (can be null)
      */
     public Claim getClaimFrom() {
@@ -37,8 +38,8 @@ public class PlayerPreClaimBorderEvent extends PlayerEvent implements Cancellabl
 
     /**
      * Get the claim the player entered
-     *
-     * @return Claim the player entered (can be null)
+     * Null if there is no claim at the location
+     * @return Claim the player entered 
      */
     public Claim getClaimTo() {
         return claimTo;
@@ -46,7 +47,7 @@ public class PlayerPreClaimBorderEvent extends PlayerEvent implements Cancellabl
 
     /**
      * Get the location the player moved from
-     *
+     * This is adjusted to be within world height
      * @return Location the player moved from
      */
     public Location getLocFrom() {
@@ -55,7 +56,7 @@ public class PlayerPreClaimBorderEvent extends PlayerEvent implements Cancellabl
 
     /**
      * Get the location the player moved to
-     *
+     * This is adjusted to be within world height
      * @return Location the player moved to
      */
     public Location getLocTo() {

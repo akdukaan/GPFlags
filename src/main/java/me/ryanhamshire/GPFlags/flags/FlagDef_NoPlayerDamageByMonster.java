@@ -88,9 +88,4 @@ public class FlagDef_NoPlayerDamageByMonster extends FlagDefinition {
         return new MessageSpecifier(Messages.DisableNoPlayerDamageByMonster);
     }
 
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.WORLD, FlagType.SERVER);
-    }
-
 }

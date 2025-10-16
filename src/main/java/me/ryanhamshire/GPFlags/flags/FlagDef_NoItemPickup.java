@@ -52,9 +52,4 @@ public class FlagDef_NoItemPickup extends FlagDefinition {
         return new MessageSpecifier(Messages.DisableNoItemPickup);
     }
 
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.SERVER, FlagType.WORLD);
-    }
-
 }

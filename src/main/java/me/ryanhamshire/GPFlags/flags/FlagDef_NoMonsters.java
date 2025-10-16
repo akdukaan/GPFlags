@@ -38,7 +38,7 @@ public class FlagDef_NoMonsters extends FlagDefinition {
         CreatureSpawnEvent.SpawnReason reason = event.getSpawnReason();
 
         WorldSettings settings = this.settingsManager.get(entity.getWorld());
-        if (settings.noMonsterSpawnIgnoreSpawners && (reason == SpawnReason.SPAWNER || reason == SpawnReason.SPAWNER_EGG)) {
+        if (settings.noMonsterSpawnIgnoreSpawners && Util.isSpawnerReason(reason)) {
             entity.setMetadata(this.ALLOW_TARGET_TAG, new FixedMetadataValue(GPFlags.getInstance(), Boolean.TRUE));
             return;
         }
@@ -106,11 +106,6 @@ public class FlagDef_NoMonsters extends FlagDefinition {
     @Override
     public MessageSpecifier getUnSetMessage() {
         return new MessageSpecifier(Messages.EnableMonsters);
-    }
-
-    @Override
-    public List<FlagDefinition.FlagType> getFlagType() {
-        return Arrays.asList(FlagDefinition.FlagType.CLAIM, FlagDefinition.FlagType.WORLD, FlagDefinition.FlagType.SERVER);
     }
 
 }

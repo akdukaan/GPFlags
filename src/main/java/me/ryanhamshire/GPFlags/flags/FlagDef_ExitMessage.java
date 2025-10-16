@@ -7,10 +7,12 @@ import me.ryanhamshire.GPFlags.MessageSpecifier;
 import me.ryanhamshire.GPFlags.Messages;
 import me.ryanhamshire.GPFlags.SetFlagResult;
 import me.ryanhamshire.GPFlags.TextMode;
-import me.ryanhamshire.GPFlags.util.Util;
+import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import me.ryanhamshire.GriefPrevention.Claim;
 import org.bukkit.Location;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 public class FlagDef_ExitMessage extends PlayerMovementFlagDefinition {
 
@@ -22,45 +24,19 @@ public class FlagDef_ExitMessage extends PlayerMovementFlagDefinition {
     }
 
     @Override
-    public void onChangeClaim(Player player, Location lastLocation, Location to, Claim claimFrom, Claim claimTo) {
-        if (lastLocation == null) return;
-        Flag flag = this.getFlagInstanceAtLocation(lastLocation, player);
-        if (flag == null) return;
-
-        // get specific ExitMessage flag of origin claim and EnterMessage flag of destination claim
-        Flag flagFrom = plugin.getFlagManager().getFlag(claimFrom, this);
-        Flag flagToEnter = plugin.getFlagManager().getFlag(claimTo, plugin.getFlagManager().getFlagDefinitionByName("EnterMessage"));
-
-        // Don't repeat the exit message of a claim in certain cases
-        if (claimFrom != null && claimTo != null) {
-            // moving to parent claim, and the sub claim does not have its own exit message
-            if (claimFrom.parent == claimTo && (flagFrom == null || !flagFrom.getSet())) {
-                return;
-            }
-            // moving to sub-claim, and the sub claim does not have its own enter message
-            if (claimTo.parent == claimFrom && (flagToEnter == null || !flagToEnter.getSet())) {
-                return;
-            }
-
-            // moving between sub-claims and the sub claim does not have its own enter message
-            Flag flagTo = plugin.getFlagManager().getFlag(claimTo, this);
-            if (claimTo.parent == claimFrom.parent && (flagTo == null || !flagTo.getSet()) && (flagFrom == null || !flagFrom.getSet())) {
-                return;
-            }
-
-            // moving to different claim with the same message
-            if (flagTo != null && flagTo.parameters.equals(flagFrom.parameters)) {
-                if (claimFrom.getOwnerName().equals(claimTo.getOwnerName())) return;
-            }
-        }
-
-        String message = flag.parameters;
+    public void onChangeClaim(Player player, Location lastLocation, Location to, Claim claimFrom, Claim claimTo, @Nullable Flag flagFrom, @Nullable Flag flagTo) {
+        if (flagFrom == null) return;
+        // moving to different claim with the same message
+        if (flagTo != null && flagTo.parameters.equals(flagFrom.parameters)) return;
+        String message = flagFrom.parameters;
         if (claimFrom != null) {
-            message = message.replace("%owner%", claimFrom.getOwnerName());
+            String ownerName = claimFrom.getOwnerName();
+            if (ownerName != null) {
+                message = message.replace("%owner%", ownerName);
+            }
         }
         message = message.replace("%name%", player.getName());
-
-        Util.sendClaimMessage(player, TextMode.Info, prefix + message);
+        MessagingUtil.sendMessage(player, TextMode.Info + prefix + message);
     }
 
     @Override
@@ -69,7 +45,7 @@ public class FlagDef_ExitMessage extends PlayerMovementFlagDefinition {
     }
 
     @Override
-    public SetFlagResult validateParameters(String parameters) {
+    public SetFlagResult validateParameters(String parameters, CommandSender sender) {
         if (parameters.isEmpty()) {
             return new SetFlagResult(false, new MessageSpecifier(Messages.MessageRequired));
         }

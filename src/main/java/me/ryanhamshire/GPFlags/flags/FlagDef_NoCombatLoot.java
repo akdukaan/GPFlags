@@ -47,9 +47,4 @@ public class FlagDef_NoCombatLoot extends FlagDefinition {
         return new MessageSpecifier(Messages.DisableNoCombatLoot);
     }
 
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.WORLD, FlagType.SERVER);
-    }
-
 }

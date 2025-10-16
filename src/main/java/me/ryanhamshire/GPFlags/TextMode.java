@@ -18,7 +18,7 @@
 
 package me.ryanhamshire.GPFlags;
 
-import org.bukkit.ChatColor;
+;
 
 /**
  * Text color modifiers
@@ -26,10 +26,10 @@ import org.bukkit.ChatColor;
 //just a few constants for chat color codes
 public class TextMode {
 
-    public final static ChatColor Info = ChatColor.AQUA;
-    public final static ChatColor Instr = ChatColor.YELLOW;
-    public final static ChatColor Warn = ChatColor.GOLD;
-    public final static ChatColor Err = ChatColor.RED;
-    public final static ChatColor Success = ChatColor.GREEN;
+    public final static String Info = "<aqua>";
+    public final static String Instr = "<yellow>";
+    public final static String Warn = "<gold>";
+    public final static String Err = "<red>";
+    public final static String Success = "<green>";
 
 }

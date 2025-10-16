@@ -44,9 +44,4 @@ public class FlagDef_NoFallDamage extends FlagDefinition {
         return new MessageSpecifier(Messages.DisabledNoFallDamage);
     }
 
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.WORLD, FlagType.SERVER);
-    }
-
 }

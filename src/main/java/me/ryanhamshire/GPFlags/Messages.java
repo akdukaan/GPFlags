@@ -69,6 +69,7 @@ public enum Messages {
     EnableHealthRegen,
     DisableHealthRegen,
     HealthRegenGreaterThanZero,
+    HealthRegenTooHigh,
     EnableNoHunger,
     DisableNoHunger,
     FoodRegenInvalid,
@@ -142,6 +143,8 @@ public enum Messages {
     OwnerMemberFlightDisabled,
     EnterFlightEnabled,
     ExitFlightDisabled,
+    PermissionFlightEnabled,
+    PermissionFlightDisabled,
     EnabledNoEnterPlayer,
     DisabledNoEnterPlayer,
     NoEnterPlayerMessage,
@@ -172,6 +175,8 @@ public enum Messages {
     DisabledNoExplosionDamage,
     EnabledAllowBlockExplosions,
     DisabledAllowBlockExplosions,
+    EnabledAllowInfest,
+    DisabledAllowInfest,
     NoOwnerFlag,
     EnableNoElytra,
     DisableNoElytra,
@@ -179,6 +184,7 @@ public enum Messages {
     DisableViewContainers,
     EnableReadLecterns,
     DisableReadLecterns,
+    LecternOpened,
     EnableNoBlockGravity,
     DisableNoBlockGravity,
     EnableNoBlockForm,
@@ -218,6 +224,8 @@ public enum Messages {
     DisabledAllowWitherDamage,
     EnableNoEliteMobSpawns,
     DisableNoEliteMobSpawns,
+    EnableNoCropTrampling,
+    DisableNoCropTrampling,
 
     EnabledNoStructureGrowth,
     DisableNoStructureGrowth,
@@ -229,6 +237,7 @@ public enum Messages {
     NoFlagInClaim,
     NoFlagInWorld,
     NoFlagInServer,
+    NoFlagInDefault,
 
     EnableNoOpenDoor,
     DisableNoOpenDoor,
@@ -265,6 +274,12 @@ public enum Messages {
     EnableBuySubclaim,
     DisableBuySubclaim,
     SubclaimPrice,
+
+    EnabledAllowVillagerTrading,
+    DisabledAllowVillagerTrading,
+
+    EnabledRestoreGrazedGrass,
+    DisabledRestoreGrazedGrass,
 
     Prefix
 }

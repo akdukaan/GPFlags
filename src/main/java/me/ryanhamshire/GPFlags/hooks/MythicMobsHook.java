@@ -1,4 +1,4 @@
-package me.ryanhamshire.GPFlags;
+package me.ryanhamshire.GPFlags.hooks;
 
 import io.lumine.mythic.bukkit.BukkitAPIHelper;
 import org.bukkit.entity.Entity;

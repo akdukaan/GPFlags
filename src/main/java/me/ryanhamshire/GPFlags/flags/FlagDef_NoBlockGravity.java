@@ -38,9 +38,4 @@ public class FlagDef_NoBlockGravity extends FlagDefinition {
         return new MessageSpecifier(Messages.DisableNoBlockGravity);
     }
 
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.WORLD, FlagType.SERVER);
-    }
-
 }

@@ -15,6 +15,7 @@ import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -22,7 +23,6 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class FlagDef_SpleefArena extends FlagDefinition {
@@ -43,17 +43,17 @@ public class FlagDef_SpleefArena extends FlagDefinition {
         PlayerData playerData = GriefPrevention.instance.dataStore.getPlayerData(player.getUniqueId());
         Claim claim = GriefPrevention.instance.dataStore.getClaimAt(location, false, playerData.lastClaim);
         if (claim == null) return;
+        if (!claim.contains(Util.getInBoundsLocation(player), false, false)) return;
+
 
         ArrayList<Chunk> chunks = claim.getChunks();
         for (Chunk chunk : chunks) {
             for (int x = 0; x < 16; x++) {
                 for (int z = 0; z < 16; z++) {
-                    for (int y = 0; y < Util.getMaxHeight(location) - data.differenceY; y++) {
-                        if (claim.contains(Util.getInBoundsLocation(player), false, false)) {
-                            Block block = chunk.getBlock(x, y, z);
-                            if (data.IsSupport(block)) {
-                                chunk.getBlock(x, y + data.differenceY, z).setType(data.blockMat);
-                            }
+                    for (int y = Util.getMinHeight(location); y < Util.getMaxHeight(location) - data.differenceY; y++) {
+                        Block block = chunk.getBlock(x, y, z);
+                        if (data.isReference(block)) {
+                            chunk.getBlock(x, y + data.differenceY, z).setType(data.actionableMaterial);
                         }
                     }
                 }
@@ -70,7 +70,7 @@ public class FlagDef_SpleefArena extends FlagDefinition {
         if (flag == null) return;
 
         SpleefData data = new SpleefData(flag.getParametersArray());
-        if (data.IsBlock(block)) {
+        if (data.isActionable(block)) {
             event.setCancelled(true);  //break the block
         }
     }
@@ -84,14 +84,14 @@ public class FlagDef_SpleefArena extends FlagDefinition {
         Flag flag = this.getFlagInstanceAtLocation(location, null);
         if (flag == null) return;
         SpleefData data = new SpleefData(flag.getParametersArray());
-        if (data.IsBlock(block)) {
+        if (data.isActionable(block)) {
             e.setDropItems(false);  //don't drop anything
         }
 
     }
 
     @Override
-    public SetFlagResult validateParameters(String parameters) {
+    public SetFlagResult validateParameters(String parameters, CommandSender sender) {
         String[] params = parameters.split(" ");
         String supportMaterialName;
         String blockMaterialName;
@@ -101,7 +101,6 @@ public class FlagDef_SpleefArena extends FlagDefinition {
         }
 
         try {
-
             if (params[0].contains(":")) {
                 String[] params_2 = params[0].split(":");
                 if (!params_2[0].startsWith("minecraft")) {
@@ -164,44 +163,42 @@ public class FlagDef_SpleefArena extends FlagDefinition {
     }
 
     private class SpleefData {
-        Material supportMat = null;
-        Material blockMat = null;
-        Integer differenceY = null;
+        Material referenceMaterial = null; // bricks
+        Material actionableMaterial = null; // snow
+        Integer differenceY = null; // high much higher the snow is from the bricks
 
         SpleefData(String[] params) {
 
+            // Like snow
             if (params[0].contains(":")) {
                 String[] params_2 = params[0].split(":");
-                blockMat = Material.getMaterial(params_2[1].toUpperCase());
+                actionableMaterial = Material.getMaterial(params_2[1].toUpperCase());
             } else {
-                blockMat = Material.getMaterial(params[0].toUpperCase());
+                actionableMaterial = Material.getMaterial(params[0].toUpperCase());
             }
 
+            // Like bricks
             if (params[1].contains(":")) {
                 String[] params_2 = params[1].split(":");
-                supportMat = Material.getMaterial(params_2[1].toUpperCase());
+                referenceMaterial = Material.getMaterial(params_2[1].toUpperCase());
             } else {
-                supportMat = Material.getMaterial(params[1].toUpperCase());
+                referenceMaterial = Material.getMaterial(params[1].toUpperCase());
             }
-
             differenceY = Integer.valueOf(params[2]);
-
         }
 
-        boolean IsSupport(Block b) {
-
-            return b.getType() == supportMat;
+        boolean isReference(Block b) {
+            return b.getType() == referenceMaterial;
         }
 
-        boolean IsBlock(Block b) {
-
-            return b.getType() == blockMat;
+        boolean isActionable(Block b) {
+            return b.getType() == actionableMaterial;
         }
     }
 
     @Override
     public List<FlagType> getFlagType() {
-        return Collections.singletonList(FlagType.CLAIM);
+        return List.of(FlagType.CLAIM);
     }
 
 }

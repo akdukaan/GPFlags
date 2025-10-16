@@ -36,9 +36,4 @@ public class FlagDef_NoBlockForm extends FlagDefinition {
         return new MessageSpecifier(Messages.DisableNoBlockForm);
     }
 
-    @Override
-    public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.SERVER, FlagType.WORLD);
-    }
-
 }
