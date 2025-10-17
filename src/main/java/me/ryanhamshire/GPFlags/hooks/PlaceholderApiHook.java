@@ -56,6 +56,15 @@ public class PlaceholderApiHook extends PlaceholderExpansion {
     }
 
     @Override
+    public @Nonnull List<String> getPlaceholders() {
+        List<String> result = new java.util.ArrayList<>();
+        result.add("%gpflags_"+ "cansetclaimflag"+ "_<flag>%");
+        result.add("%gpflags_"+ "isflagactive"+ "_<flag>%");
+        result.add("%gpflags_"+ "flagparam"+ "_<flag>%");
+        return result;
+    }
+
+    @Override
     public @Nullable String onRequest(OfflinePlayer offlinePlayer, @NotNull String identifier) {
         if (!(offlinePlayer instanceof Player)) return null;
         Player player = (Player) offlinePlayer;
