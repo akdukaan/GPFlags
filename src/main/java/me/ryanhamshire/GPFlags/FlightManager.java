@@ -211,6 +211,7 @@ public class FlightManager implements Listener {
     @EventHandler
     private void onFlyToggle(PlayerToggleFlightEvent event) {
         if (event.isFlying()) return;
+        Player player = event.getPlayer();
         Bukkit.getScheduler().runTaskLater(GPFlags.getInstance(), () -> {
             Location location = player.getLocation();
             Claim claim = GriefPrevention.instance.dataStore.getClaimAt(location, false, null);
