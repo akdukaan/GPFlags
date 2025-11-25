@@ -211,8 +211,28 @@ public class FlightManager implements Listener {
     @EventHandler
     private void onFlyToggle(PlayerToggleFlightEvent event) {
         if (event.isFlying()) return;
-        Player player = event.getPlayer();
-        manageFlightLater(player, 1, null);
+        Bukkit.getScheduler().runTaskLater(GPFlags.getInstance(), () -> {
+            Location location = player.getLocation();
+            Claim claim = GriefPrevention.instance.dataStore.getClaimAt(location, false, null);
+            boolean manageFlight = gpfManagesFlight(player);
+            if (!manageFlight) return;
+
+            if (FlagDef_OwnerMemberFly.letPlayerFly(player, location, claim)) {
+                turnOnFlight(player);
+                return;
+            }
+            if (FlagDef_OwnerFly.letPlayerFly(player, location, claim)) {
+                turnOnFlight(player);
+                return;
+            }
+            if (!FlagDef_NoFlight.letPlayerFly(player, location, claim)) {
+                return;
+            }
+            if (FlagDef_PermissionFly.letPlayerFly(player, location, claim)) {
+                turnOnFlight(player);
+                return;
+            }
+        }, 1);
     }
 
     private static void turnOffFlight(@NotNull Player player) {
