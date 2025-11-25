@@ -211,7 +211,7 @@ public class FlightManager implements Listener {
     @EventHandler
     private void onFlyToggle(PlayerToggleFlightEvent event) {
         Player player = event.getPlayer();
-        manageFlightLater(player, 1, null)
+        manageFlightLater(player, 1, null);
     }
 
     private static void turnOffFlight(@NotNull Player player) {
