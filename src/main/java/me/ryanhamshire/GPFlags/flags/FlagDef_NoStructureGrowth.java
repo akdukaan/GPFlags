@@ -4,8 +4,6 @@ import me.ryanhamshire.GPFlags.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.world.StructureGrowEvent;
 
-import java.util.Arrays;
-import java.util.List;
 
 public class FlagDef_NoStructureGrowth extends FlagDefinition {
 
