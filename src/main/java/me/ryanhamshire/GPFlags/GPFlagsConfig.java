@@ -7,7 +7,6 @@ import me.ryanhamshire.GPFlags.commands.CommandBuyContainerTrust;
 import me.ryanhamshire.GPFlags.commands.CommandBuySubclaim;
 import me.ryanhamshire.GPFlags.flags.*;
 import me.ryanhamshire.GPFlags.util.MessagingUtil;
-import me.ryanhamshire.GPFlags.util.Util;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import org.bukkit.Bukkit;
@@ -182,7 +181,6 @@ public class GPFlagsConfig {
             this.flagManager.registerFlagDefinition(new FlagDef_AllowBlockExplosions(this.flagManager, plugin));
             this.flagManager.registerFlagDefinition(new FlagDef_ProtectNamedMobs(this.flagManager, plugin));
             this.flagManager.registerFlagDefinition(new FlagDef_NoBlockGravity(this.flagManager, plugin));
-            this.flagManager.registerFlagDefinition(new FlagDef_ChangeBiome(this.flagManager, plugin));
             this.flagManager.registerFlagDefinition(new FlagDef_NoOpenDoors(this.flagManager, plugin));
             this.flagManager.registerFlagDefinition(new FlagDef_NoVehicle(this.flagManager, plugin));
             this.flagManager.registerFlagDefinition(new FlagDef_NoBlockForm(this.flagManager, plugin));

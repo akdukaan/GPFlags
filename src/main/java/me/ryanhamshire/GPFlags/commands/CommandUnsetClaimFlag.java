@@ -4,7 +4,6 @@ import me.ryanhamshire.GPFlags.GPFlags;
 import me.ryanhamshire.GPFlags.Messages;
 import me.ryanhamshire.GPFlags.SetFlagResult;
 import me.ryanhamshire.GPFlags.TextMode;
-import me.ryanhamshire.GPFlags.flags.FlagDef_ChangeBiome;
 import me.ryanhamshire.GPFlags.flags.FlagDefinition;
 import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import me.ryanhamshire.GPFlags.util.Util;
@@ -61,11 +60,6 @@ public class CommandUnsetClaimFlag implements TabExecutor {
         if (!Util.canEdit(player, claim)) {
             MessagingUtil.sendMessage(player, TextMode.Err, Messages.NotYourClaim);
             return true;
-        }
-
-        if (flagName.equalsIgnoreCase("ChangeBiome")) {
-            FlagDef_ChangeBiome flagD = ((FlagDef_ChangeBiome) plugin.getFlagManager().getFlagDefinitionByName("changebiome"));
-//            flagD.resetBiome(claim);
         }
 
         SetFlagResult result = plugin.getFlagManager().unSetFlag(claimID.toString(), def);
