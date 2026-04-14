@@ -210,6 +210,7 @@ public class FlightManager implements Listener {
 
     @EventHandler
     private void onFlyToggle(PlayerToggleFlightEvent event) {
+        if (event.isFlying()) return;
         Player player = event.getPlayer();
         Bukkit.getScheduler().runTaskLater(GPFlags.getInstance(), () -> {
             Location location = player.getLocation();
@@ -225,12 +226,14 @@ public class FlightManager implements Listener {
                 turnOnFlight(player);
                 return;
             }
-
             if (!FlagDef_NoFlight.letPlayerFly(player, location, claim)) {
-                turnOffFlight(player);
+                return;
+            }
+            if (FlagDef_PermissionFly.letPlayerFly(player, location, claim)) {
+                turnOnFlight(player);
+                return;
             }
         }, 1);
-
     }
 
     private static void turnOffFlight(@NotNull Player player) {

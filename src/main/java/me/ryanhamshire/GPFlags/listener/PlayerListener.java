@@ -1,14 +1,8 @@
 package me.ryanhamshire.GPFlags.listener;
 
-import me.ryanhamshire.GPFlags.FlightManager;
-import me.ryanhamshire.GPFlags.GPFlags;
-import me.ryanhamshire.GPFlags.event.PlayerPostClaimBorderEvent;
-import me.ryanhamshire.GPFlags.event.PlayerPreClaimBorderEvent;
-import me.ryanhamshire.GPFlags.util.Util;
-import me.ryanhamshire.GriefPrevention.Claim;
-import me.ryanhamshire.GriefPrevention.DataStore;
-import me.ryanhamshire.GriefPrevention.GriefPrevention;
-import me.ryanhamshire.GriefPrevention.events.ClaimDeletedEvent;
+import java.util.ArrayList;
+import java.util.Set;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -18,14 +12,24 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityMountEvent;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.PlayerBedEnterEvent;
+import org.bukkit.event.player.PlayerBedLeaveEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
+import org.bukkit.event.vehicle.VehicleExitEvent;
 
-import java.util.ArrayList;
-import java.util.Set;
-
-import static me.ryanhamshire.GPFlags.FlightManager.gpfAllowsFlight;
-import static me.ryanhamshire.GPFlags.FlightManager.manageFlightLater;
+import me.ryanhamshire.GPFlags.FlightManager;
+import me.ryanhamshire.GPFlags.GPFlags;
+import me.ryanhamshire.GPFlags.event.PlayerPostClaimBorderEvent;
+import me.ryanhamshire.GPFlags.event.PlayerPreClaimBorderEvent;
+import me.ryanhamshire.GPFlags.util.Util;
+import me.ryanhamshire.GriefPrevention.Claim;
+import me.ryanhamshire.GriefPrevention.DataStore;
+import me.ryanhamshire.GriefPrevention.GriefPrevention;
+import me.ryanhamshire.GriefPrevention.events.ClaimDeletedEvent;
 
 /**
  * Purpose is
@@ -89,6 +93,17 @@ public class PlayerListener implements Listener {
         if (flagsPreventMovement(to, from, player)) {
             event.setCancelled(true);
         }
+    }
+    
+    @EventHandler(ignoreCancelled = true)
+    private void onExitVehicle(VehicleExitEvent event) {
+
+        // gets the player who is exiting the vehicle
+        if (!(event.getExited() instanceof Player)) return;
+        Player player = (Player) event.getExited();
+
+        // manage their flight
+        FlightManager.managePlayerFlight(player, null, player.getLocation());
     }
 
     @EventHandler
