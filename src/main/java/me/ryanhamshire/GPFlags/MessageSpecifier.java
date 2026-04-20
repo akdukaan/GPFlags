@@ -2,8 +2,8 @@ package me.ryanhamshire.GPFlags;
 
 public class MessageSpecifier {
 
-    Messages messageID;
-    String[] messageParams;
+    public Messages messageID;
+    public String[] messageParams;
 
     public MessageSpecifier(Messages messageID, String... messageParams) {
         this.messageID = messageID;

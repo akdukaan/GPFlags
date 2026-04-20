@@ -12,6 +12,11 @@ commands:
     description: Reload or get help
     usage: /GPFlags <reload|help>
     permission: gpflags.command.gpflags
+  flagsgui:
+    description: Open the Flags GUI
+    usage: /FlagsGUI
+    permission: gpflags.command.flagsgui
+    aliases: [gfgui, claimflagsgui, flagsmenu]
   allflags:
     description: Sends a list of all flags and their flag type
     usage: /AllFlags
@@ -115,7 +120,11 @@ permissions:
           gpflags.command.listflags: true
           gpflags.command.reload: true
           gpflags.command.allflags: true
+          gpflags.command.flagsgui: true
           gpflags.bypass.*: true
+  gpflags.command.flagsgui:
+      description: Grants permission to use /FlagsGUI.
+      default: true
   gpflags.setflag:
       description: Grants permission to use /SetClaimFlag. (depreciated)
       default: op
