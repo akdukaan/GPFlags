@@ -273,6 +273,8 @@ public enum Messages {
 
     EnabledAllowVillagerTrading,
     DisabledAllowVillagerTrading,
+    EnabledAllowItemFrameContents,
+    DisabledAllowItemFrameContents,
 
     EnabledRestoreGrazedGrass,
     DisabledRestoreGrazedGrass,
