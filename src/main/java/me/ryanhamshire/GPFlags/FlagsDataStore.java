@@ -389,6 +389,8 @@ public class FlagsDataStore {
 
         this.addDefault(defaults, Messages.EnabledAllowVillagerTrading, "Players can now trade with villagers in this claim.", null);
         this.addDefault(defaults, Messages.DisabledAllowVillagerTrading, "Players can no longer trade with villagers in this claim.", null);
+        this.addDefault(defaults, Messages.EnabledAllowItemFrameContents, "Players with container trust can now manage item frame contents in this claim.", null);
+        this.addDefault(defaults, Messages.DisabledAllowItemFrameContents, "Players with container trust can no longer manage item frame contents in this claim.", null);
 
         this.addDefault(defaults, Messages.EnabledRestoreGrazedGrass, "Grass will now immediiately regrow after being grazed by sheep.", null);
         this.addDefault(defaults, Messages.DisabledRestoreGrazedGrass, "Grass will no longer immediately regrow after being grazed by sheep.", null);
