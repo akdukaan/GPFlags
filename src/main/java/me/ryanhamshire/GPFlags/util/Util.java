@@ -80,6 +80,11 @@ public class Util {
         }
     }
 
+    public static boolean canConfigureClaimFlags(Player player, Claim claim) {
+        if (claim == null) return false;
+        return canEdit(player, claim) || canManage(claim, player);
+    }
+
     public static List<String> flagTab(CommandSender sender, String arg) {
         List<String> flags = new ArrayList<>();
         GPFlags.getInstance().getFlagManager().getFlagDefinitions().forEach(flagDefinition -> {
