@@ -80,6 +80,22 @@ public class Util {
         }
     }
 
+    public static boolean canConfigureClaimFlags(Player player, Claim claim, FlagDefinition def) {
+        if (claim == null) return false;
+        if (canEdit(player, claim)) return true;
+        if (!canManage(claim, player)) return false;
+        if (def.getName().equalsIgnoreCase(FlagManager.CLAIM_MANAGER_SET_FLAGS_FLAG)) return false;
+        return allowsClaimManagersToSetFlags(claim);
+    }
+
+    public static boolean allowsClaimManagersToSetFlags(Claim claim) {
+        if (claim == null) return false;
+        Location location = claim.getLesserBoundaryCorner();
+        if (location == null || location.getWorld() == null) return false;
+        return GPFlags.getInstance().getFlagManager().getEffectiveFlag(
+                FlagManager.CLAIM_MANAGER_SET_FLAGS_FLAG, claim, location.getWorld()) != null;
+    }
+
     public static List<String> flagTab(CommandSender sender, String arg) {
         List<String> flags = new ArrayList<>();
         GPFlags.getInstance().getFlagManager().getFlagDefinitions().forEach(flagDefinition -> {
