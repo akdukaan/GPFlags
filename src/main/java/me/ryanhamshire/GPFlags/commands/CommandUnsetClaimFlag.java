@@ -57,7 +57,7 @@ public class CommandUnsetClaimFlag implements TabExecutor {
             return true;
         }
 
-        if (!Util.canConfigureClaimFlags(player, claim)) {
+        if (!Util.canEdit(player, claim)) {
             MessagingUtil.sendMessage(player, TextMode.Err, Messages.NotYourClaim);
             return true;
         }
