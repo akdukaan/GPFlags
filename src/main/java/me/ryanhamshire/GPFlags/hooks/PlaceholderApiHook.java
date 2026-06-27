@@ -16,6 +16,10 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PlaceholderApiHook extends PlaceholderExpansion {
 
@@ -56,8 +60,8 @@ public class PlaceholderApiHook extends PlaceholderExpansion {
     }
 
     @Override
-    public @Nonnull List<String> getPlaceholders() {
-        List<String> result = new java.util.ArrayList<>();
+    public @NonNull List<String> getPlaceholders() {
+        List<String> result = new ArrayList<>();
         result.add("%gpflags_"+ "cansetclaimflag"+ "_<flag>%");
         result.add("%gpflags_"+ "isflagactive"+ "_<flag>%");
         result.add("%gpflags_"+ "flagparam"+ "_<flag>%");
