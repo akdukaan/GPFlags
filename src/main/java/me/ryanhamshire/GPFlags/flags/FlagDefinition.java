@@ -40,6 +40,22 @@ public abstract class FlagDefinition implements Listener {
     }
 
     public abstract String getName();
+    
+    /**
+     * Get the description of this flag
+     * @return The description
+     */
+    public String getDescription() {
+        return "No description available";
+    }
+    
+    /**
+     * Check if this flag requires parameters
+     * @return True if this flag requires parameters
+     */
+    public boolean requiresParameters() {
+        return false;
+    }
 
     public SetFlagResult validateParameters(String parameters, @Nullable CommandSender sender) {
         return new SetFlagResult(true, this.getSetMessage(parameters));
