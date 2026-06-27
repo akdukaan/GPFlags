@@ -36,6 +36,7 @@ public class FlagManager {
     private final List<String> worlds = new ArrayList<>();
 
     public static final String DEFAULT_FLAG_ID = "-2";
+    public static final String CLAIM_MANAGER_SET_FLAGS_FLAG = "AllowClaimManagersSetFlags";
 
     public FlagManager() {
         this.definitions = new ConcurrentHashMap<>();
