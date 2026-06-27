@@ -108,14 +108,14 @@ public class PlaceholderApiHook extends PlaceholderExpansion {
             case "isflagactive":
                 if (claim == null) return "No";
                 Flag flagActive = plugin.getFlagManager().getEffectiveFlag(player.getLocation(), flagName, claim);
-                if (flagActive != null) return "Yes"
+                if (flagActive != null) return "Yes";
                     
                 return "No";
 
             case "flagparam":
                 if (claim == null) return "";
                 Flag flagParam = plugin.getFlagManager().getEffectiveFlag(player.getLocation(), flagName, claim);
-                if (flagParam != null) return flagParam.parameters
+                if (flagParam != null) return flagParam.parameters;
                 
                 return "";
 
