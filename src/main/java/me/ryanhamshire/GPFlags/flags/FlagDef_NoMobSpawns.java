@@ -21,6 +21,7 @@ public class FlagDef_NoMobSpawns extends FlagDefinition {
 
         SpawnReason reason = event.getSpawnReason();
         if (reason == SpawnReason.SLIME_SPLIT) return;
+        if (reason == SpawnReason.COMMAND) return;
         WorldSettings settings = this.settingsManager.get(event.getEntity().getWorld());
         if (settings.noMonsterSpawnIgnoreSpawners && Util.isSpawnerReason(reason)) return;
 
