@@ -36,7 +36,7 @@ commands:
     description: Un-sets (removes) a flag on a GriefPrevention land claim for a player from console.
     usage: /UnSetClaimFlagPlayer <player> <flag>
     aliases: [ unsetflagplayer, removeflagplayer, unclaimflagplayer, removeclaimflagplayer ]
-    permission: gpflags.command.unsetclaimflagplayer
+    permission: gpflags.command.setclaimflagplayer
   setdefaultclaimflag:
     description: Sets a flag on all GriefPrevention land claims.
     usage: /SetDefaultClaimFlag <flag> <optional parameters>
@@ -46,7 +46,7 @@ commands:
     description: Un-sets (removes) a default flag from all GriefPrevention land claims.
     usage: /UnSetClaimFlag <flag>
     aliases: [ unsetdefaultflag, removedefaultflag, removedefaultclaimflag ]
-    permission: gpflags.command.unsetdefaultclaimflag
+    permission: gpflags.command.setdefaultclaimflag
   listclaimflags:
     description: Lists all the flags currently set on a GriefPrevention land claim.
     usage: /ListClaimFlags
@@ -61,7 +61,7 @@ commands:
     description: Un-sets (removes) a world-level flag.
     usage: /UnSetWorldFlag <flag>
     aliases: [ unsetworldflag, removeworldflag, unworldflag ]
-    permission: gpflags.command.unsetworldflag
+    permission: gpflags.command.setworldflag
   setserverflag:
     description: Sets a flag everywhere.
     usage: /SetServerFlag <flag> <optional parameters>
@@ -71,7 +71,7 @@ commands:
     description: Un-sets (removes) a server-level flag.
     usage: /UnSetServerFlag <flag>
     aliases: [ unsetserverflag, removeserverflag, unserverflag ]
-    permission: gpflags.command.unsetserverflag
+    permission: gpflags.command.setserverflag
   buybuildtrust:
     description: Buy buildtrust in a claim.
     usage: /buybuildtrust
@@ -106,12 +106,8 @@ permissions:
       children:
           gpflags.command.setclaimflag: true
           gpflags.command.setdefaultflag: true
-          gpflags.command.unsetdefaultflag: true
-          gpflags.command.unsetclaimflag: true
           gpflags.command.setworldflag: true
-          gpflags.command.unsetworldflag: true
           gpflags.command.setserverflag: true
-          gpflags.command.unsetserverflag: true
           gpflags.command.listflags: true
           gpflags.command.reload: true
           gpflags.command.allflags: true
@@ -121,37 +117,21 @@ permissions:
       default: op
       children:
         gpflags.command.setclaimflag: true
-  gpflags.unsetflag:
-      description: Grants permission to use /UnSetClaimFlag. (depreciated)
-      default: op
-      children:
-        gpflags.command.unsetclaimflag: true
   gpflags.setworldflag:
       description: Grants permission to use /SetWorldFlag. (depreciated)
       default: op
       children:
         gpflags.command.setworldflag: true
-  gpflags.unsetworldflag:
-      description: Grants permission to use /UnSetWorldFlag. (depreciated)
-      default: op
-      children:
-        gpflags.command.unsetworldflag: true
   gpflags.setserverflag:
       description: Grants permission to use /SetServerFlag. (depreciated)
       default: op
       children:
         gpflags.command.setserverflag: true
-  gpflags.unsetserverflag:
-      description: Grants permission to use /UnSetServerFlag. (depreciated)
-      default: op
-      children:
-        gpflags.command.unsetserverflag: true
   gpflags.defaultflags:
       description: Grants permission to use /SetDefaultClaimFlag and /UnSetDefaultClaimFlag. (depreciated)
       default: op
       children:
         gpflags.command.setdefaultclaimflag: true
-        gpflags.command.unsetdefaultclaimflag: true
   gpflags.listflags:
       description: Grants permission to use /ListClaimFlags. (depreciated)
       default: op
@@ -431,26 +411,40 @@ permissions:
     description: Makes a player immune to nomcmmoxp where they have access trust
     default: op
   gpflags.command.setclaimflag:
-    description: Grants permission to use /SetClaimFlag.
+    description: Grants permission to use /SetClaimFlag and /UnsetClaimFlag.
     default: op
+    children:
+      gpflags.command.listclaimflags: true
   gpflags.command.unsetclaimflag:
     description: Grants permission to use /UnSetClaimFlag.
     default: op
+    children:
+      gpflags.command.listclaimflags: true
   gpflags.command.setworldflag:
-    description: Grants permission to use /SetWorldFlag.
+    description: Grants permission to use /SetWorldFlag and /UnSetWorldFlag.
     default: op
+    children:
+      gpflags.command.listclaimflags: true
   gpflags.command.unsetworldflag:
-    description: Grants permission to use /UnSetWorldFlag.
+    description: Grants permission to use /UnsetWorldFlag.
     default: op
+    children:
+      gpflags.command.listclaimflags: true
   gpflags.command.setserverflag:
-    description: Grants permission to use /SetServerFlag.
+    description: Grants permission to use /SetServerFlag and /UnsetServerFlag.
     default: op
+    children:
+      - gpflags.command.listclaimflags
   gpflags.command.unsetserverflag:
     description: Grants permission to use /UnSetServerFlag.
     default: op
+    children:
+      - gpflags.command.listclaimflags
   gpflags.command.defaultflags:
     description: Grants permission to use /SetDefaultClaimFlag and /UnSetDefaultClaimFlag.
     default: op
+    children:
+      - gpflags.command.listclaimflags
   gpflags.command.listflags:
     description: Grants permission to use /ListClaimFlags (deprecated).
     default: op
@@ -458,41 +452,6 @@ permissions:
       gpflags.command.listclaimflags: true
   gpflags.command.listclaimflags:
     description: Grants permission to use /ListClaimFlags.
-    default: op
-    children:
-      gpflags.command.listclaimflags.use: true
-  gpflags.command.listclaimflags.ownclaim:
-    description: Grants permission to use /ListClaimFlags in owned claims.
-    default: op
-    children:
-      gpflags.command.listclaimflags.use: true
-  gpflags.command.listclaimflags.nonclaim:
-    description: Grants permission to use /ListClaimFlags outside of claims.
-    default: op
-    children:
-      gpflags.command.listclaimflags.use: true
-  gpflags.command.listclaimflags.adminclaim:
-    description: Grants permission to use /ListClaimFlags in admin claims.
-    default: op
-    children:
-      gpflags.command.listclaimflags.use: true
-  gpflags.command.listclaimflags.manage:
-    description: Grants permission to use /ListClaimFlags in claims with manage trust.
-    default: op
-    children:
-      gpflags.command.listclaimflags.use: true
-  gpflags.command.listclaimflags.build:
-    description: Grants permission to use /ListClaimFlags in claims with build trust.
-    default: op
-    children:
-      gpflags.command.listclaimflags.use: true
-  gpflags.command.listclaimflags.inventory:
-    description: Grants permission to use /ListClaimFlags in claims with inventory trust.
-    default: op
-    children:
-      gpflags.command.listclaimflags.use: true
-  gpflags.command.listclaimflags.access:
-    description: Grants permission to use /ListClaimFlags in claims with accesstrust.
     default: op
     children:
       gpflags.command.listclaimflags.use: true

@@ -19,7 +19,7 @@ import java.util.List;
 public class CommandUnsetServerFlag implements TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
-        if (!sender.hasPermission("gpflags.command.unsetserverflag")) {
+        if (!sender.hasPermission("gpflags.command.setserverflag")) {
             MessagingUtil.sendMessage(sender, TextMode.Err, Messages.NoCommandPermission, command.toString());
             return true;
         }

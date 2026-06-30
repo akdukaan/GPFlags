@@ -16,7 +16,7 @@ import java.util.List;
 public class CommandUnsetDefaultClaimFlag implements TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
-        if (!sender.hasPermission("gpflags.command.unsetdefaultclaimflag")) {
+        if (!sender.hasPermission("gpflags.command.setdefaultclaimflag")) {
             MessagingUtil.sendMessage(sender, TextMode.Err, Messages.NoCommandPermission, command.toString());
             return true;
         }

@@ -20,7 +20,7 @@ import java.util.List;
 public class CommandUnsetWorldFlag implements TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
-        if (!sender.hasPermission("gpflags.command.unsetworldflag")) {
+        if (!sender.hasPermission("gpflags.command.setworldflag")) {
             MessagingUtil.sendMessage(sender, TextMode.Err, Messages.NoCommandPermission, command.toString());
             return true;
         }

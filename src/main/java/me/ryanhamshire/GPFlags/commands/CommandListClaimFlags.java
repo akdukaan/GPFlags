@@ -29,7 +29,7 @@ public class CommandListClaimFlags implements TabExecutor {
         PlayerData playerData = GriefPrevention.instance.dataStore.getPlayerData(player.getUniqueId());
         Claim claim = GriefPrevention.instance.dataStore.getClaimAt(player.getLocation(), false, playerData.lastClaim);
 
-        if (!Util.shouldBypass(player, claim, "gpflags.command.listclaimflags")) {
+        if (!player.hasPermission("gpflags.command.listclaimflags")) {
             MessagingUtil.sendMessage(commandSender, TextMode.Err, Messages.NoCommandPermission, command.toString());
             return true;
         }
