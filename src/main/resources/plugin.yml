@@ -197,6 +197,9 @@ permissions:
   gpflags.bypass.nochorusfruit:
     description: Makes a player immune to nochorusfruit flags
     default: op
+  gpflags.bypass.nochorusfruit.ownclaim:
+    description: Makes a player immune to their own nochorusfruit flags
+    default: op
   gpflags.bypass.nochorusfruit.nonclaim:
     description: Makes a player immune to nochorusfruit outside of claims
     default: op
@@ -242,9 +245,6 @@ permissions:
   gpflags.bypass.entercommand:
     description: Makes a player immune to entercommand flags
     default: false
-  gpflags.bypass.nochorusfruit.ownclaim:
-    description: Makes a player immune to their own nochorusfruit flags
-    default: op
   gpflags.bypass.noelytra:
     description: Makes a player immune to noelytra flags
     default: op
@@ -409,6 +409,30 @@ permissions:
     default: op
   gpflags.bypass.nomcmmoxp.access:
     description: Makes a player immune to nomcmmoxp where they have access trust
+    default: op
+  gpflags.bypass.protectnamedmobs:
+    description: Makes a player immune to protectnamedmobs flags
+    default: op
+  gpflags.bypass.protectnamedmobs.ownclaim:
+    description: Makes a player immune to their own protectnamedmobs flags
+    default: true
+  gpflags.bypass.protectnamedmobs.nonclaim:
+    description: Makes a player immune to protectnamedmobs outside of claims
+    default: op
+  gpflags.bypass.protectnamedmobs.adminclaim:
+    description: Makes a player immune to protectnamedmobs in adminclaims
+    default: op
+  gpflags.bypass.protectnamedmobs.manage:
+    description: Makes a player immune to protectnamedmobs where they have manage trust
+    default: op
+  gpflags.bypass.protectnamedmobs.build:
+    description: Makes a player immune to protectnamedmobs where they have build trust
+    default: op
+  gpflags.bypass.protectnamedmobs.inventory:
+    description: Makes a player immune to protectnamedmobs where they have inventory trust
+    default: op
+  gpflags.bypass.protectnamedmobs.access:
+    description: Makes a player immune to protectnamedmobs where they have access trust
     default: op
   gpflags.command.setclaimflag:
     description: Grants permission to use /SetClaimFlag and /UnsetClaimFlag.
