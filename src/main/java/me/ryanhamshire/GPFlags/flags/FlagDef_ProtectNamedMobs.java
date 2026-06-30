@@ -2,6 +2,7 @@ package me.ryanhamshire.GPFlags.flags;
 
 import me.ryanhamshire.GPFlags.*;
 import me.ryanhamshire.GPFlags.hooks.MythicMobsHook;
+import me.ryanhamshire.GPFlags.util.Util;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.ClaimPermission;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
@@ -44,7 +45,7 @@ public class FlagDef_ProtectNamedMobs extends FlagDefinition {
 
         Player player = (Player) damager;
         Claim claim = GriefPrevention.instance.dataStore.getClaimAt(entity.getLocation(), false, null);
-        if (claim != null && claim.getPermission(player.getUniqueId().toString()) == ClaimPermission.Inventory) return;
+        if (Util.shouldBypass(player, claim, flag)) return;
         event.setCancelled(true);
     }
 
@@ -65,7 +66,7 @@ public class FlagDef_ProtectNamedMobs extends FlagDefinition {
 
     @Override
     public List<FlagType> getFlagType() {
-        return Arrays.asList(FlagType.CLAIM, FlagType.DEFAULT);
+        return Arrays.asList(FlagType.CLAIM, FlagType.DEFAULT, FlagType.SERVER, FlagType.WORLD);
     }
 
 }
