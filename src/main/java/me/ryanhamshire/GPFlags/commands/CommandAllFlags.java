@@ -22,7 +22,7 @@ public class CommandAllFlags implements TabExecutor {
         }
         for (FlagDefinition flag : GPFlags.getInstance().getFlagManager().getFlagDefinitions()) {
             if (commandSender.hasPermission("gpflags.flag." + flag.getName())) {
-                MessagingUtil.sendMessage(commandSender, flag.getName() + " <grey>" + flag.getFlagType());
+                MessagingUtil.sendMessage(commandSender, flag.getName() + flag.flagTypes(commandSender));
             }
         }
         return true;

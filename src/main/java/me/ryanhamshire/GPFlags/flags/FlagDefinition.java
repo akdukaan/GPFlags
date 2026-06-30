@@ -15,9 +15,11 @@ import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
+import org.bukkit.permissions.Permissible;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -51,6 +53,25 @@ public abstract class FlagDefinition implements Listener {
 
     public List<FlagType> getFlagType() {
         return Arrays.asList(FlagType.CLAIM, FlagType.DEFAULT, FlagType.WORLD, FlagType.SERVER);
+    }
+
+    public String flagTypes(Permissible permissible) {
+        List<FlagType> flagTypes = this.getFlagType();
+        List<String> allowedTypes = new ArrayList<>();
+        if (flagTypes.contains(FlagType.CLAIM) && permissible.hasPermission("gpflags.command.setclaimflag")) {
+            allowedTypes.add(FlagType.CLAIM.toString().toLowerCase());
+        }
+        if (flagTypes.contains(FlagType.WORLD) && permissible.hasPermission("gpflags.command.setworldflag")) {
+            allowedTypes.add(FlagType.WORLD.toString().toLowerCase());
+        }
+        if (flagTypes.contains(FlagType.SERVER) && permissible.hasPermission("gpflags.command.setserverflag")) {
+            allowedTypes.add(FlagType.SERVER.toString().toLowerCase());
+        }
+        if (flagTypes.contains(FlagType.DEFAULT) && permissible.hasPermission("gpflags.command.setdefaultclaimflag")) {
+            allowedTypes.add(FlagType.DEFAULT.toString().toLowerCase());
+        }
+        if (allowedTypes.isEmpty()) return "";
+        return "<gray>[" + String.join(" ", allowedTypes) + "<gray>]";
     }
 
     // Called when a flag is set to false/true, etc.
