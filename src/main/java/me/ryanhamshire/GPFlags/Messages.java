@@ -230,6 +230,9 @@ public enum Messages {
     EnabledNoStructureGrowth,
     DisableNoStructureGrowth,
 
+    ChangeBiomeSet,
+    ChangeBiomeUnset,
+
     NoFlagInClaim,
     NoFlagInWorld,
     NoFlagInServer,

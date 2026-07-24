@@ -1,6 +1,7 @@
 package me.ryanhamshire.GPFlags.commands;
 
 import me.ryanhamshire.GPFlags.*;
+import me.ryanhamshire.GPFlags.flags.FlagDef_ChangeBiome;
 import me.ryanhamshire.GPFlags.flags.FlagDefinition;
 import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import me.ryanhamshire.GPFlags.util.Util;
@@ -89,6 +90,13 @@ public class CommandSetClaimFlag implements TabExecutor {
                     return true;
                 }
             }
+        }
+
+        // Apply the biome before persisting the flag so invalid values are rejected.
+        if (flagName.equalsIgnoreCase("ChangeBiome")) {
+            if (args.length < 2) return false;
+            FlagDef_ChangeBiome flagD = (FlagDef_ChangeBiome) gpflags.getFlagManager().getFlagDefinitionByName("changebiome");
+            if (!flagD.changeBiome(commandSender, claim, String.join(" ", params))) return true;
         }
 
         // Check permissions for mob type

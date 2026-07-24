@@ -181,6 +181,7 @@ public class GPFlagsConfig {
             this.flagManager.registerFlagDefinition(new FlagDef_AllowBlockExplosions(this.flagManager, plugin));
             this.flagManager.registerFlagDefinition(new FlagDef_ProtectNamedMobs(this.flagManager, plugin));
             this.flagManager.registerFlagDefinition(new FlagDef_NoBlockGravity(this.flagManager, plugin));
+            this.flagManager.registerFlagDefinition(new FlagDef_ChangeBiome(this.flagManager, plugin));
             this.flagManager.registerFlagDefinition(new FlagDef_NoOpenDoors(this.flagManager, plugin));
             this.flagManager.registerFlagDefinition(new FlagDef_NoVehicle(this.flagManager, plugin));
             this.flagManager.registerFlagDefinition(new FlagDef_NoBlockForm(this.flagManager, plugin));
