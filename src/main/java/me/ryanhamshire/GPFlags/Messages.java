@@ -277,6 +277,8 @@ public enum Messages {
     DisabledAllowItemFrameContents,
     EnabledAllowClaimManagersSetFlags,
     DisabledAllowClaimManagersSetFlags,
+    EnabledAllowClaimManagersManageSubclaims,
+    DisabledAllowClaimManagersManageSubclaims,
 
     EnabledRestoreGrazedGrass,
     DisabledRestoreGrazedGrass,

@@ -393,6 +393,8 @@ public class FlagsDataStore {
         this.addDefault(defaults, Messages.DisabledAllowItemFrameContents, "Players with container trust can no longer manage item frame contents in this claim.", null);
         this.addDefault(defaults, Messages.EnabledAllowClaimManagersSetFlags, "Players with manage trust can now configure flags in this claim.", null);
         this.addDefault(defaults, Messages.DisabledAllowClaimManagersSetFlags, "Players with manage trust can no longer configure flags in this claim.", null);
+        this.addDefault(defaults, Messages.EnabledAllowClaimManagersManageSubclaims, "Players with manage trust can now manage subclaims in this claim.", null);
+        this.addDefault(defaults, Messages.DisabledAllowClaimManagersManageSubclaims, "Players with manage trust can no longer manage subclaims in this claim.", null);
 
         this.addDefault(defaults, Messages.EnabledRestoreGrazedGrass, "Grass will now immediiately regrow after being grazed by sheep.", null);
         this.addDefault(defaults, Messages.DisabledRestoreGrazedGrass, "Grass will no longer immediately regrow after being grazed by sheep.", null);

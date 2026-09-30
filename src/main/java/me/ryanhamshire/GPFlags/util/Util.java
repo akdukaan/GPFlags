@@ -82,10 +82,19 @@ public class Util {
 
     public static boolean canConfigureClaimFlags(Player player, Claim claim, FlagDefinition def) {
         if (claim == null) return false;
-        if (canEdit(player, claim)) return true;
+        if (canEditWithoutFlagDelegation(player, claim)) return true;
         if (!canManage(claim, player)) return false;
         if (def.getName().equalsIgnoreCase(FlagManager.CLAIM_MANAGER_SET_FLAGS_FLAG)) return false;
+        if (def.getName().equalsIgnoreCase(FlagManager.CLAIM_MANAGER_MANAGE_SUBCLAIMS_FLAG)) return false;
         return allowsClaimManagersToSetFlags(claim);
+    }
+
+    private static boolean canEditWithoutFlagDelegation(Player player, Claim claim) {
+        PlayerData playerData = GriefPrevention.instance.dataStore.getPlayerData(player.getUniqueId());
+        if (playerData.ignoreClaims) return true;
+        if (claim.isAdminClaim()) return player.hasPermission("griefprevention.adminclaims");
+        if (player.hasPermission("griefprevention.deleteclaims")) return true;
+        return player.getUniqueId().equals(claim.getOwnerID());
     }
 
     public static boolean allowsClaimManagersToSetFlags(Claim claim) {
