@@ -4,6 +4,7 @@ import me.ryanhamshire.GPFlags.GPFlags;
 import me.ryanhamshire.GPFlags.Messages;
 import me.ryanhamshire.GPFlags.SetFlagResult;
 import me.ryanhamshire.GPFlags.TextMode;
+import me.ryanhamshire.GPFlags.flags.FlagDef_ChangeBiome;
 import me.ryanhamshire.GPFlags.flags.FlagDefinition;
 import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import me.ryanhamshire.GPFlags.util.Util;
@@ -55,6 +56,12 @@ public class CommandSetClaimFlagPlayer implements TabExecutor {
 
         String[] params = new String[args.length - 2];
         System.arraycopy(args, 2, params, 0, args.length - 2);
+
+        if (flagName.equalsIgnoreCase("ChangeBiome")) {
+            if (args.length < 3) return false;
+            FlagDef_ChangeBiome flagD = (FlagDef_ChangeBiome) gpflags.getFlagManager().getFlagDefinitionByName("changebiome");
+            if (!flagD.changeBiome(commandSender, claim, String.join(" ", params))) return true;
+        }
 
         SetFlagResult result = gpflags.getFlagManager().setFlag(claim.getID().toString(), def, true, commandSender, params);
         String color = result.isSuccess() ? TextMode.Success : TextMode.Err;

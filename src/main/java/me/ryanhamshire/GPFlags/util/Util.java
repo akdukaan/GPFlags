@@ -7,6 +7,7 @@ import me.ryanhamshire.GriefPrevention.ClaimPermission;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import me.ryanhamshire.GriefPrevention.PlayerData;
 import org.bukkit.*;
+import org.bukkit.block.Biome;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
@@ -106,6 +107,7 @@ public class Util {
         return StringUtil.copyPartialMatches(arg, flags, new ArrayList<>());
     }
 
+    @SuppressWarnings("deprecation")
     public static List<String> paramTab(CommandSender sender, String[] args) {
         switch (args[0].toLowerCase(Locale.ROOT)) {
             case "commandblacklist":
@@ -157,6 +159,17 @@ public class Util {
                     }
                 }
                 return StringUtil.copyPartialMatches(args[1], entityTypes, new ArrayList<>());
+
+            case "changebiome":
+                ArrayList<String> biomes = new ArrayList<>();
+                for (Biome biome : Registry.BIOME) {
+                    String biomeKey = biome.getKey().getKey();
+                    if (sender.hasPermission("gpflags.flag.changebiome." + biomeKey)) {
+                        biomes.add(biomeKey);
+                    }
+                }
+                biomes.sort(String.CASE_INSENSITIVE_ORDER);
+                return StringUtil.copyPartialMatches(args[1], biomes, new ArrayList<>());
 
             case "noopendoors":
                 if (args.length != 2) return null;

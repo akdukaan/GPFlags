@@ -4,6 +4,7 @@ import me.ryanhamshire.GPFlags.Flag;
 import me.ryanhamshire.GPFlags.FlagManager;
 import me.ryanhamshire.GPFlags.GPFlags;
 import me.ryanhamshire.GPFlags.event.PlayerPostClaimBorderEvent;
+import me.ryanhamshire.GPFlags.flags.FlagDef_ChangeBiome;
 import me.ryanhamshire.GPFlags.flags.FlagDefinition;
 import me.ryanhamshire.GPFlags.util.Util;
 import me.ryanhamshire.GriefPrevention.Claim;
@@ -54,6 +55,18 @@ public class ClaimResizeListener implements Listener {
             if (keepLoaded.getSet()) {
                 def.onFlagUnset(claimFrom);
                 def.onFlagSet(claimTo, null);
+            }
+        }
+
+        Flag changeBiome = manager.getRawClaimFlag(claimFrom, "ChangeBiome");
+        if (changeBiome != null && changeBiome.getSet()) {
+            FlagDefinition def = manager.getFlagDefinitionByName("ChangeBiome");
+            if (def instanceof FlagDef_ChangeBiome) {
+                ((FlagDef_ChangeBiome) def).changeBiome(
+                        Bukkit.getConsoleSender(),
+                        claimTo,
+                        changeBiome.getParameters()
+                );
             }
         }
 
