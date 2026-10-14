@@ -102,7 +102,7 @@ public class PlaceholderApiHook extends PlaceholderExpansion {
                 if (claim == null) return "No";
 
                 // Check that they can set flags in the area
-                if (!Util.canEdit(player, claim)) {
+                if (!Util.canConfigureClaimFlags(player, claim, def)) {
                     MessagingUtil.sendMessage(player, TextMode.Err, Messages.NotYourClaim);
                     return "No";
                 }
