@@ -17,8 +17,6 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 
-import java.util.Arrays;
-import java.util.List;
 
 public class FlagDef_NoMobSpawnsType extends FlagDefinition {
 
@@ -81,6 +79,11 @@ public class FlagDef_NoMobSpawnsType extends FlagDefinition {
             event.setCancelled(true);
             damager.remove();
         }
+    }
+
+    @Override
+    public FlagParameterType getParameterType() {
+        return FlagParameterType.ENTITY_TYPES;
     }
 
     @Override

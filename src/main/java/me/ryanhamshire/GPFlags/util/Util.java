@@ -7,7 +7,6 @@ import me.ryanhamshire.GriefPrevention.ClaimPermission;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import me.ryanhamshire.GriefPrevention.PlayerData;
 import org.bukkit.*;
-import org.bukkit.block.Biome;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
@@ -62,6 +61,7 @@ public class Util {
     }
 
     public static boolean canManage(Claim claim, Player player) {
+        if (claim == null) return false;
         PlayerData playerData = GriefPrevention.instance.dataStore.getPlayerData(player.getUniqueId());
         if (playerData.ignoreClaims) return true;
         try {
@@ -72,18 +72,24 @@ public class Util {
     }
 
     public static boolean canEdit(Player player, Claim claim) {
+        if (claim == null) return false;
         PlayerData playerData = GriefPrevention.instance.dataStore.getPlayerData(player.getUniqueId());
         if (playerData.ignoreClaims) return true;
         try {
             return claim.checkPermission(player, ClaimPermission.Edit, null) == null;
-        } catch (NoSuchFieldError e) {
+        } catch (NoSuchFieldError | NoSuchMethodError e) {
             return claim.allowEdit(player) == null;
         }
     }
 
     public static boolean canConfigureClaimFlags(Player player, Claim claim, FlagDefinition def) {
         if (claim == null) return false;
-        if (canEdit(player, claim)) return true;
+        PlayerData playerData = GriefPrevention.instance.dataStore.getPlayerData(player.getUniqueId());
+        if (playerData.ignoreClaims) return true;
+        // GP's Edit check also grants access via deleteclaims. Flag editing instead
+        // requires ownership, admin-claim authority, or explicitly enabled managers.
+        if (player.getUniqueId().equals(claim.getOwnerID())) return true;
+        if (claim.isAdminClaim() && player.hasPermission("griefprevention.adminclaims")) return true;
         if (!canManage(claim, player)) return false;
         if (def.getName().equalsIgnoreCase(FlagManager.CLAIM_MANAGER_SET_FLAGS_FLAG)) return false;
         return allowsClaimManagersToSetFlags(claim);
@@ -107,76 +113,11 @@ public class Util {
         return StringUtil.copyPartialMatches(arg, flags, new ArrayList<>());
     }
 
-    @SuppressWarnings("deprecation")
     public static List<String> paramTab(CommandSender sender, String[] args) {
-        switch (args[0].toLowerCase(Locale.ROOT)) {
-            case "commandblacklist":
-            case "commandwhitelist":
-            case "entercommand":
-            case "entercommand_members":
-            case "entercommand_owner":
-            case "exitcommand":
-            case "exitcommand_members":
-            case "exitcommand_owner":
-            case "entermessage":
-            case "exitmessage":
-                List<String> params = new ArrayList<>();
-                if (!(sender instanceof Player)) return null;
-                Player p = (Player) sender;
-                FlagDefinition flagD = (GPFlags.getInstance().getFlagManager().getFlagDefinitionByName("entercommand"));
-                Flag flag = flagD.getFlagInstanceAtLocation(p.getLocation(), p);
-                if (flag == null) return null;
-                String flagParams = flag.parameters;
-                if (flagParams != null) {
-                    params.add(flagParams);
-                }
-                return StringUtil.copyPartialMatches(args[1], params, new ArrayList<>());
-            case "noenterplayer":
-                if (!(sender instanceof Player)) return null;
-                Player p2 = (Player) sender;
-                FlagDefinition flagD2 = (GPFlags.getInstance().getFlagManager().getFlagDefinitionByName("noenterplayer"));
-                Flag flag2 = flagD2.getFlagInstanceAtLocation(p2.getLocation(), p2);
-                if (flag2 == null) return null;
-                String flagParams2 = flag2.parameters;
-                if (flagParams2 == null) return null;
-                ArrayList<String> suggestion = new ArrayList<>();
-                suggestion.add(flag2.getFriendlyParameters());
-                return StringUtil.copyPartialMatches(args[1], suggestion, new ArrayList<>());
-            case "nomobspawnstype":
-                List<String> entityTypes = new ArrayList<>();
-                for (EntityType entityType : EntityType.values()) {
-                    String type = entityType.toString();
-                    if (sender.hasPermission("gpflags.flag.nomobspawnstype." + type)) {
-                        String arg = args[1];
-                        if (arg.contains(";")) {
-                            if (arg.charAt(arg.length() - 1) != ';') {
-                                arg = arg.substring(0, arg.lastIndexOf(';') + 1);
-                            }
-                            entityTypes.add(arg + type);
-                        } else {
-                            entityTypes.add(type);
-                        }
-                    }
-                }
-                return StringUtil.copyPartialMatches(args[1], entityTypes, new ArrayList<>());
-
-            case "changebiome":
-                ArrayList<String> biomes = new ArrayList<>();
-                for (Biome biome : Registry.BIOME) {
-                    String biomeKey = biome.getKey().getKey();
-                    if (sender.hasPermission("gpflags.flag.changebiome." + biomeKey)) {
-                        biomes.add(biomeKey);
-                    }
-                }
-                biomes.sort(String.CASE_INSENSITIVE_ORDER);
-                return StringUtil.copyPartialMatches(args[1], biomes, new ArrayList<>());
-
-            case "noopendoors":
-                if (args.length != 2) return null;
-                List<String> doorType = Arrays.asList("doors", "trapdoors", "gates");
-                return StringUtil.copyPartialMatches(args[1], doorType, new ArrayList<>());
-        }
-        return Collections.emptyList();
+        if (args.length < 2) return Collections.emptyList();
+        FlagDefinition def = GPFlags.getInstance().getFlagManager().getFlagDefinitionByName(args[0]);
+        if (def == null || !sender.hasPermission("gpflags.flag." + def.getName())) return Collections.emptyList();
+        return def.tabCompleteParameters(sender, Arrays.copyOfRange(args, 1, args.length));
     }
 
     public static int getMaxHeight(Location l) {

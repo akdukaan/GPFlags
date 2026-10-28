@@ -76,8 +76,8 @@ public class CommandSetWorldFlag implements TabExecutor {
             return StringUtil.copyPartialMatches(args[0], worlds, new ArrayList<>());
         } else if (args.length == 2) {
             return Util.flagTab(commandSender, args[1]);
-        } else if (args.length == 3) {
-            return Util.paramTab(commandSender, args);
+        } else if (args.length >= 3) {
+            return Util.paramTab(commandSender, java.util.Arrays.copyOfRange(args, 1, args.length));
         }
         return Collections.emptyList();
     }

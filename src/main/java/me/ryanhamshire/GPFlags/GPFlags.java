@@ -6,6 +6,7 @@ import java.util.logging.Level;
 import com.google.common.collect.ImmutableMap;
 import me.ryanhamshire.GPFlags.commands.*;
 import me.ryanhamshire.GPFlags.flags.FlagDefinition;
+import me.ryanhamshire.GPFlags.flags.FlagDescriptions;
 import me.ryanhamshire.GPFlags.hooks.PlaceholderApiHook;
 import me.ryanhamshire.GPFlags.listener.*;
 import me.ryanhamshire.GPFlags.util.MessagingUtil;
@@ -57,6 +58,7 @@ public class GPFlags extends JavaPlugin {
         reloadConfig();
 
         // Register Commands
+        getCommand("claimflags").setExecutor(new CommandClaimFlags());
         getCommand("allflags").setExecutor(new CommandAllFlags());
         getCommand("gpflags").setExecutor(new CommandGPFlags());
         getCommand("listclaimflags").setExecutor(new CommandListClaimFlags());
@@ -104,6 +106,7 @@ public class GPFlags extends JavaPlugin {
      * Reload the config file
      */
     public void reloadConfig() {
+        FlagDescriptions.reload(this);
         this.worldSettingsManager = new WorldSettingsManager();
         new GPFlagsConfig(this);
     }

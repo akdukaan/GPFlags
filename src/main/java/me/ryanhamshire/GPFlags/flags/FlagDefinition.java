@@ -43,6 +43,24 @@ public abstract class FlagDefinition implements Listener {
 
     public abstract String getName();
 
+    public FlagParameterType getParameterType() {
+        return FlagParameterType.BOOLEAN;
+    }
+
+    public List<String> tabCompleteParameters(CommandSender sender, String[] parameters) {
+        List<String> suggestions = getParameterType().complete(sender, parameters);
+        if ((getParameterType() == FlagParameterType.TEXT || getParameterType() == FlagParameterType.COMMANDS)
+                && sender instanceof Player && parameters.length == 1) {
+            Player player = (Player) sender;
+            Flag existing = getFlagInstanceAtLocation(player.getLocation(), player);
+            if (existing != null && existing.getFriendlyParameters().toLowerCase(java.util.Locale.ROOT)
+                    .startsWith(parameters[0].toLowerCase(java.util.Locale.ROOT))) {
+                return java.util.Collections.singletonList(existing.getFriendlyParameters());
+            }
+        }
+        return suggestions;
+    }
+
     public SetFlagResult validateParameters(String parameters, @Nullable CommandSender sender) {
         return new SetFlagResult(true, this.getSetMessage(parameters));
     }

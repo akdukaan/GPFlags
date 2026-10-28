@@ -17,8 +17,6 @@ import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.projectiles.ProjectileSource;
 
-import java.util.Arrays;
-import java.util.List;
 
 public class FlagDef_NoPlayerDamageByMonster extends FlagDefinition {
 

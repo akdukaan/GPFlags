@@ -22,6 +22,11 @@ public class FlagDef_ChangeBiome extends FlagDefinition {
         super(manager, plugin);
     }
 
+    @Override
+    public FlagParameterType getParameterType() {
+        return FlagParameterType.BIOME;
+    }
+
     private void changeBiome(Claim claim, Biome biome) {
         Location greater = claim.getGreaterBoundaryCorner();
         Location lesser = claim.getLesserBoundaryCorner();

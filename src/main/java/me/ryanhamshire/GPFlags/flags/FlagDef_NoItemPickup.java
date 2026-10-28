@@ -13,8 +13,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 
-import java.util.Arrays;
-import java.util.List;
 
 public class FlagDef_NoItemPickup extends FlagDefinition {
 

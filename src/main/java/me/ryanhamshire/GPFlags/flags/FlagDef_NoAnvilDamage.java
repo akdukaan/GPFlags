@@ -7,8 +7,6 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 
-import java.util.Arrays;
-import java.util.List;
 
 public class FlagDef_NoAnvilDamage extends FlagDefinition {
 

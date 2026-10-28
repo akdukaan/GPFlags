@@ -1,14 +1,10 @@
 package me.ryanhamshire.GPFlags.flags;
 
 import me.ryanhamshire.GPFlags.*;
-import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 
-import java.util.Arrays;
-import java.util.List;
 
 public class FlagDef_SpawnReasonWhitelist extends FlagDefinition {
 
@@ -32,6 +28,11 @@ public class FlagDef_SpawnReasonWhitelist extends FlagDefinition {
                 return;
             }
         }
+    }
+
+    @Override
+    public FlagParameterType getParameterType() {
+        return FlagParameterType.SPAWN_REASONS;
     }
 
     @Override

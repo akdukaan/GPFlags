@@ -35,6 +35,11 @@ public class FlagDef_TrappedDestination extends FlagDefinition {
     }
 
     @Override
+    public FlagParameterType getParameterType() {
+        return FlagParameterType.LOCATION;
+    }
+
+    @Override
     public String getName() {
         return "TrappedDestination";
     }

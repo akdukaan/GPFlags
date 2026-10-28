@@ -91,6 +91,11 @@ public class FlagDef_SpleefArena extends FlagDefinition {
     }
 
     @Override
+    public FlagParameterType getParameterType() {
+        return FlagParameterType.SPLEEF;
+    }
+
+    @Override
     public SetFlagResult validateParameters(String parameters, CommandSender sender) {
         String[] params = parameters.split(" ");
         String supportMaterialName;

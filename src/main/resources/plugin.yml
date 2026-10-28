@@ -8,6 +8,10 @@ website: https://modrinth.com/plugin/gpflags
 version: '${project.version}'
 api-version: '1.16'
 commands:
+  claimflags:
+    description: Opens a dialog to edit flags in the current claim.
+    usage: /ClaimFlags
+    permission: gpflags.command.setclaimflag
   gpflags:
     description: Reload or get help
     usage: /GPFlags <reload|help>
@@ -50,7 +54,7 @@ commands:
   listclaimflags:
     description: Lists all the flags currently set on a GriefPrevention land claim.
     usage: /ListClaimFlags
-    aliases: [ listclaimflags, claimflags, listflags ]
+    aliases: [ listflags ]
     permission: gpflags.command.listclaimflags.use
   setworldflag:
     description: Sets a flag on an entire world.

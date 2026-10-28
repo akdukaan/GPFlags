@@ -6,8 +6,6 @@ import me.ryanhamshire.GriefPrevention.Claim;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import java.util.Arrays;
-import java.util.List;
 
 
 public class FlagDef_PermissionFly extends FlagDefinition {

@@ -16,7 +16,6 @@ import org.bukkit.event.raid.RaidTriggerEvent;
 import org.bukkit.potion.PotionEffectType;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class FlagDef_RaidMemberOnly extends FlagDefinition {

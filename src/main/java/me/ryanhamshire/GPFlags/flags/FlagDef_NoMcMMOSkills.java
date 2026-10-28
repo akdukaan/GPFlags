@@ -16,8 +16,6 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 
-import java.util.Arrays;
-import java.util.List;
 
 public class FlagDef_NoMcMMOSkills extends FlagDefinition {
 

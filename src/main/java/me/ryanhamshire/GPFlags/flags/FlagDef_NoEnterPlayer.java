@@ -25,6 +25,11 @@ public class FlagDef_NoEnterPlayer extends PlayerMovementFlagDefinition {
     }
 
     @Override
+    public FlagParameterType getParameterType() {
+        return FlagParameterType.PLAYERS;
+    }
+
+    @Override
     public void onFlagSet(Claim claim, String string) {
         Flag flag = this.getFlagInstanceAtLocation(claim.getLesserBoundaryCorner(), null);
         for (Player player : Util.getPlayersIn(claim)) {

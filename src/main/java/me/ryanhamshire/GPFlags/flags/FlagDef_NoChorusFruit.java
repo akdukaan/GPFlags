@@ -14,9 +14,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 public class FlagDef_NoChorusFruit extends FlagDefinition {
 

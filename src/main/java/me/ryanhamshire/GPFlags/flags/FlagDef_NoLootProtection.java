@@ -8,8 +8,6 @@ import me.ryanhamshire.GPFlags.Messages;
 import me.ryanhamshire.GriefPrevention.events.ProtectDeathDropsEvent;
 import org.bukkit.event.EventHandler;
 
-import java.util.Arrays;
-import java.util.List;
 
 public class FlagDef_NoLootProtection extends FlagDefinition {
 

@@ -11,8 +11,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityDeathEvent;
 
-import java.util.Arrays;
-import java.util.List;
 
 public class FlagDef_NoCombatLoot extends FlagDefinition {
 

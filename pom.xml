@@ -6,7 +6,7 @@
 
     <groupId>me.ryanhamshire</groupId>
     <artifactId>GPFlags</artifactId>
-    <version>5.13.9.${build.number}</version>
+    <version>5.14.0.${build.number}</version>
 
     <properties>
 <!--        this is the real java version used for compilation-->
@@ -46,7 +46,7 @@
         </repository>
         <repository>
             <id>elitemobs-repo</id>
-            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+            <url>https://repo.magmaguy.com/releases</url>
         </repository>
     </repositories>
     <dependencies>
@@ -104,7 +104,7 @@
         <dependency>
             <groupId>com.magmaguy</groupId>
             <artifactId>EliteMobs</artifactId>
-            <version>8.7.4-SNAPSHOT</version>
+            <version>10.9.10</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -151,6 +151,13 @@
                 <targetPath>.</targetPath>
                 <includes>
                     <include>plugin.yml</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>flag-descriptions.yml</include>
                 </includes>
             </resource>
         </resources>

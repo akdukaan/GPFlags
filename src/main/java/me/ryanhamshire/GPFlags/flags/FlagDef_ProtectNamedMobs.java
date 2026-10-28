@@ -4,7 +4,6 @@ import me.ryanhamshire.GPFlags.*;
 import me.ryanhamshire.GPFlags.hooks.MythicMobsHook;
 import me.ryanhamshire.GPFlags.util.Util;
 import me.ryanhamshire.GriefPrevention.Claim;
-import me.ryanhamshire.GriefPrevention.ClaimPermission;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;

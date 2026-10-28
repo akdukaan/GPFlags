@@ -22,6 +22,11 @@ public class FlagDef_ExitCommand_Members extends PlayerMovementFlagDefinition {
     }
 
     @Override
+    public FlagParameterType getParameterType() {
+        return FlagParameterType.COMMANDS;
+    }
+
+    @Override
     public void onChangeClaim(Player player, Location lastLocation, Location to, Claim claimFrom, Claim claimTo, @Nullable Flag flagFrom, @Nullable Flag flagTo) {
         if (flagFrom == null) return;
 
