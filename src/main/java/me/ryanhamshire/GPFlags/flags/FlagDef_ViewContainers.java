@@ -69,6 +69,7 @@ public class FlagDef_ViewContainers extends FlagDefinition {
         } else {
             InventoryType type = original.getType();
             if (!type.isCreatable()) return;
+            if (type == InventoryType.BREWING) return;
             copy = Bukkit.createInventory(original.getHolder(), type);
         }
         
