@@ -8,7 +8,6 @@ import me.ryanhamshire.GriefPrevention.events.ClaimDeletedEvent;
 import org.bukkit.*;
 import org.bukkit.block.Biome;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -38,49 +37,30 @@ public class FlagDef_ChangeBiome extends FlagDefinition {
         int gZ = greater.getBlockZ();
         World world = lesser.getWorld();
         int ticks = 0;
-        for (int x = lX; x <= gX; x++) {
-            // We don't loop over y because then all chunks would get loaded in the same runnable
-            // and it's better to split that up
-            int finalX = x;
-            BukkitRunnable runnable = new BukkitRunnable() {
-                @Override
-                public void run() {
-                    for (int z = lZ; z <= gZ; z++) {
-                        Location loadLoc = new Location(world, finalX, 100, z);
-                        Chunk loadChunk = loadLoc.getChunk();
-                        if (!(loadChunk.isLoaded())) {
-                            loadChunk.load();
+        for (int chunkX = lX >> 4; chunkX <= gX >> 4; chunkX++) {
+            for (int chunkZ = lZ >> 4; chunkZ <= gZ >> 4; chunkZ++) {
+                int finalChunkX = chunkX;
+                int finalChunkZ = chunkZ;
+                // Finish each chunk before resending it, spreading large claims over multiple ticks.
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        world.getChunkAt(finalChunkX, finalChunkZ).load();
+                        int minX = Math.max(lX, finalChunkX << 4);
+                        int maxX = Math.min(gX, (finalChunkX << 4) + 15);
+                        int minZ = Math.max(lZ, finalChunkZ << 4);
+                        int maxZ = Math.min(gZ, (finalChunkZ << 4) + 15);
+                        for (int x = minX; x <= maxX; x++) {
+                            for (int z = minZ; z <= maxZ; z++) {
+                                for (int y = lY; y <= gY; y++) {
+                                    world.setBiome(x, y, z, biome);
+                                }
+                            }
                         }
-                        for (int y = lY; y <= gY; y++) {
-                            world.setBiome(finalX, y, z, biome);
-                        }
+                        // Resend to everyone viewing this chunk, even when the owner is offline.
+                        world.refreshChunk(finalChunkX, finalChunkZ);
                     }
-                }
-            };
-            runnable.runTaskLater(GPFlags.getInstance(), ticks++);
-        }
-        BukkitRunnable runnable = new BukkitRunnable() {
-            @Override
-            public void run() {
-                refreshChunks(claim);
-            }
-        };
-        runnable.runTaskLater(GPFlags.getInstance(), ticks);
-    }
-
-    private void refreshChunks(Claim claim) {
-        int view = Bukkit.getServer().getViewDistance();
-        Player player = Bukkit.getPlayer(claim.getOwnerName());
-        if (player != null && player.isOnline()) {
-            Location loc = player.getLocation();
-            if (claim.contains(loc, true, true)) {
-                int X = loc.getChunk().getX();
-                int Z = loc.getChunk().getZ();
-                for (int x = X - view; x <= (X + view); x++) {
-                    for (int z = Z - view; z <= (Z + view); z++) {
-                        player.getWorld().refreshChunk(x, z);
-                    }
-                }
+                }.runTaskLater(GPFlags.getInstance(), ticks++);
             }
         }
     }
