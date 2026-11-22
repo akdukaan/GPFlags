@@ -232,6 +232,9 @@ public enum Messages {
 
     ChangeBiomeSet,
     ChangeBiomeUnset,
+    ChangeBiomeStarted,
+    ChangeBiomeProgress,
+    ChangeBiomeCompleted,
 
     NoFlagInClaim,
     NoFlagInWorld,

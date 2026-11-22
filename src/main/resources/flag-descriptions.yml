@@ -13,7 +13,7 @@ buyaccesstrust: "Allows players to buy access trust in the claim. They can use /
 buybuildtrust: "Allows players to buy build trust in the claim. They can use /buybuildtrust while standing in the claim to buy build trust. The price is determined when setting the flag."
 buycontainertrust: "Allows players to buy container trust in the claim. They can use /buycontainertrust while standing in the claim to buy container trust. The price is determined when setting the flag."
 buysubclaim: "Allows players to buy the subclaim. Buying the subclaim will give the buyer all levels of trust and will disable the flag to prevent other players from buying the subclaim after that."
-changebiome: "Changes the biome of the claim. Parameter: a biome name."
+changebiome: "Changes the biome of the claim. Parameter: a biome name (plains or minecraft:plains) or a custom namespaced biome (namespace:biome)."
 allowclaimmanagerssetflags: "Allows claim managers to configure claim flags. Managers cannot change this flag themselves."
 commandblacklist: "Blacklist commands. Prevents players from using any commands you list in the flagged area unless they have the gpflags.bypass.commandblacklist permission."
 commandwhitelist: "Whitelist commands. The flag prevents players from using any commands except those you list in the flagged area unless they have the gpflags.bypass.commandwhitelist permission."

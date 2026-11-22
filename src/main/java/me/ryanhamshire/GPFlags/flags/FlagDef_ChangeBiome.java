@@ -1,6 +1,7 @@
 package me.ryanhamshire.GPFlags.flags;
 
 import me.ryanhamshire.GPFlags.*;
+import me.ryanhamshire.GPFlags.util.BiomeUpdates;
 import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import me.ryanhamshire.GPFlags.util.Util;
 import me.ryanhamshire.GriefPrevention.Claim;
@@ -17,8 +18,11 @@ import java.util.Locale;
 
 public class FlagDef_ChangeBiome extends FlagDefinition {
 
+    private final BiomeUpdates biomeUpdates;
+
     public FlagDef_ChangeBiome(FlagManager manager, GPFlags plugin) {
         super(manager, plugin);
+        biomeUpdates = new BiomeUpdates(plugin);
     }
 
     @Override
@@ -26,7 +30,7 @@ public class FlagDef_ChangeBiome extends FlagDefinition {
         return FlagParameterType.BIOME;
     }
 
-    private void changeBiome(Claim claim, Biome biome) {
+    private void changeBiome(CommandSender sender, Claim claim, Biome biome) {
         Location greater = claim.getGreaterBoundaryCorner();
         Location lesser = claim.getLesserBoundaryCorner();
         int lX = lesser.getBlockX();
@@ -36,6 +40,12 @@ public class FlagDef_ChangeBiome extends FlagDefinition {
         int gY = Util.getMaxHeight(greater) - 1;
         int gZ = greater.getBlockZ();
         World world = lesser.getWorld();
+        long totalChunks = ((long) (gX >> 4) - (lX >> 4) + 1)
+                * ((long) (gZ >> 4) - (lZ >> 4) + 1);
+        long[] completedChunks = {0};
+        String biomeName = getBiomeName(biome.getKey());
+        MessagingUtil.sendMessage(sender, "<yellow>", Messages.ChangeBiomeStarted,
+                biomeName, Long.toString(totalChunks));
         int ticks = 0;
         for (int chunkX = lX >> 4; chunkX <= gX >> 4; chunkX++) {
             for (int chunkZ = lZ >> 4; chunkZ <= gZ >> 4; chunkZ++) {
@@ -58,7 +68,17 @@ public class FlagDef_ChangeBiome extends FlagDefinition {
                             }
                         }
                         // Resend to everyone viewing this chunk, even when the owner is offline.
-                        world.refreshChunk(finalChunkX, finalChunkZ);
+                        biomeUpdates.send(world, finalChunkX, finalChunkZ);
+                        long completed = ++completedChunks[0];
+                        if (completed == totalChunks) {
+                            MessagingUtil.sendMessage(sender, "<green>", Messages.ChangeBiomeCompleted,
+                                    biomeName, Long.toString(totalChunks));
+                        } else if (completed % 20 == 0) {
+                            // One chunk runs per tick, so report roughly once per second.
+                            MessagingUtil.sendMessage(sender, "<yellow>", Messages.ChangeBiomeProgress,
+                                    Long.toString(completed * 100 / totalChunks),
+                                    Long.toString(completed), Long.toString(totalChunks));
+                        }
                     }
                 }.runTaskLater(GPFlags.getInstance(), ticks++);
             }
@@ -67,7 +87,8 @@ public class FlagDef_ChangeBiome extends FlagDefinition {
 
     @SuppressWarnings("deprecation")
     public boolean changeBiome(CommandSender sender, Claim claim, String biome) {
-        Biome b = Registry.BIOME.get(NamespacedKey.minecraft(biome.toLowerCase(Locale.ROOT).replace(" ", "_")));
+        NamespacedKey key = NamespacedKey.fromString(biome.toLowerCase(Locale.ROOT).replace(" ", "_"));
+        Biome b = key == null ? null : Registry.BIOME.get(key);
         if (b == null) {
             MessagingUtil.sendMessage(sender, "<red>Invalid biome: <aqua>" + biome);
             return false;
@@ -77,13 +98,18 @@ public class FlagDef_ChangeBiome extends FlagDefinition {
             MessagingUtil.sendMessage(sender, "<red>World does not exist.");
             return false;
         }
-        String biomeKey = b.getKey().getKey();
+        String biomeKey = getBiomeName(b.getKey());
         if (!sender.hasPermission("gpflags.flag.changebiome." + biomeKey)) {
             MessagingUtil.sendMessage(sender, "<red>You do not have permissions for the biome <aqua>" + biomeKey + " <red>.");
             return false;
         }
-        changeBiome(claim, b);
+        changeBiome(sender, claim, b);
         return true;
+    }
+
+    // Keep existing vanilla names and permission nodes; custom biomes need their namespace.
+    static String getBiomeName(NamespacedKey key) {
+        return NamespacedKey.MINECRAFT.equals(key.getNamespace()) ? key.getKey() : key.toString();
     }
 
     @EventHandler

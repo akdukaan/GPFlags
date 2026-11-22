@@ -56,8 +56,10 @@ public enum FlagParameterType {
                 break;
             case BIOME:
                 Registry.BIOME.forEach(biome -> {
-                    String name = biome.getKey().getKey();
-                    if (sender.hasPermission("gpflags.flag.changebiome." + name)) values.add(name);
+                    String name = FlagDef_ChangeBiome.getBiomeName(biome.getKey());
+                    if (sender.hasPermission("gpflags.flag.changebiome." + name)) {
+                        values.add(current.contains(":") ? biome.getKey().toString() : name);
+                    }
                 });
                 break;
             case POTION_EFFECTS:

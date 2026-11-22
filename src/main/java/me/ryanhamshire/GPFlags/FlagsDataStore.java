@@ -277,8 +277,11 @@ public class FlagsDataStore {
 
         this.addDefault(defaults, Messages.NoOwnerFlag, "You cannot set both OwnerFly and OwnerMemberFly flags in one claim.", null);
 
-        this.addDefault(defaults, Messages.ChangeBiomeSet, "The biome in this claim has been set to {0}. Relog to see the changes.", "0: Biome");
+        this.addDefault(defaults, Messages.ChangeBiomeSet, "The biome flag in this claim has been set to {0}.", "0: Biome");
         this.addDefault(defaults, Messages.ChangeBiomeUnset, "You've unset the ChangeBiome flag.", null);
+        this.addDefault(defaults, Messages.ChangeBiomeStarted, "Changing biome to {0} in {1} chunks...", "0: Biome, 1: Total chunks");
+        this.addDefault(defaults, Messages.ChangeBiomeProgress, "Biome change: {0}% ({1}/{2} chunks).", "0: Percentage, 1: Completed chunks, 2: Total chunks");
+        this.addDefault(defaults, Messages.ChangeBiomeCompleted, "Biome change complete: {0} ({1} chunks, 100%).", "0: Biome, 1: Total chunks");
 
         this.addDefault(defaults, Messages.NoFlagInClaim, "This flag cannot be set in a claim.", null);
         this.addDefault(defaults, Messages.NoFlagInWorld, "This flag cannot be set for a whole world.", null);
