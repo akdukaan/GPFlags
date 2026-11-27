@@ -37,6 +37,7 @@ public class FlagManager {
 
     public static final String DEFAULT_FLAG_ID = "-2";
     public static final String CLAIM_MANAGER_SET_FLAGS_FLAG = "AllowClaimManagersSetFlags";
+    public static final String CLAIM_MANAGER_MANAGE_SUBCLAIMS_FLAG = "AllowClaimManagersManageSubclaims";
 
     public FlagManager() {
         this.definitions = new ConcurrentHashMap<>();
