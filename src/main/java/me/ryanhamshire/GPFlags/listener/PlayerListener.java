@@ -20,6 +20,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
+import org.bukkit.event.vehicle.VehicleMoveEvent;
 
 import me.ryanhamshire.GPFlags.ClaimContextTracker;
 import me.ryanhamshire.GPFlags.FlightManager;
@@ -81,6 +82,40 @@ public class PlayerListener implements Listener {
         if (flagsPreventMovement(to, from, group)) {
             event.setCancelled(true);
         }
+    }
+
+    /**
+     * Minecarts and boats don't fire a movement event for their passengers, so without this a player
+     * could ride into (or through) a claim they aren't allowed in.
+     * Living mounts like horses are handled by EntityMoveListener instead.
+     */
+    @EventHandler
+    private void onVehicleMove(VehicleMoveEvent event) {
+        Vehicle vehicle = event.getVehicle();
+        if (vehicle.getPassengers().isEmpty()) return;
+        Location locFrom = event.getFrom();
+        Location locTo = event.getTo();
+        if (locTo.getBlockX() == locFrom.getBlockX() &&
+                locTo.getBlockY() == locFrom.getBlockY() &&
+                locTo.getBlockZ() == locFrom.getBlockZ()) {
+            return;
+        }
+
+        Set<Player> group = Util.getMovementGroup(vehicle);
+        if (group.isEmpty()) return;
+        if (!flagsPreventMovement(locTo, locFrom, group)) return;
+
+        // This event can't be cancelled and the vehicle has already crossed the border, so ejecting
+        // would drop the riders inside the claim. Their own position hasn't been updated yet this tick,
+        // so teleporting them to where the vehicle came from (which also dismounts them) keeps them
+        // outside. Then break the vehicle like we do for other blocked vehicle movement.
+        for (Player player : group) {
+            Location back = locFrom.clone();
+            back.setYaw(player.getLocation().getYaw());
+            back.setPitch(player.getLocation().getPitch());
+            player.teleport(back);
+        }
+        Util.breakVehicle(vehicle, locFrom);
     }
 
     @EventHandler(ignoreCancelled = true)
