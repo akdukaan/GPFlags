@@ -1,14 +1,13 @@
 package me.ryanhamshire.GPFlags.flags;
 
 import me.ryanhamshire.GPFlags.*;
+import me.ryanhamshire.GPFlags.util.Util;
 import me.ryanhamshire.GriefPrevention.Claim;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 public class FlagDef_OwnerFly extends FlagDefinition {
 
@@ -18,28 +17,13 @@ public class FlagDef_OwnerFly extends FlagDefinition {
 
     @Override
     public void onFlagSet(Claim claim, String param) {
-        UUID uuid = claim.getOwnerID();
-        if (uuid == null) return;
-        Player owner = Bukkit.getPlayer(uuid);
-        if (owner == null) return;
-        Location location = owner.getLocation();
-        if (!claim.contains(location, false, false)) return;
-        FlightManager.managePlayerFlight(owner, null, location);
+        FlightManager.reconcileLater(Util.getPlayersIn(claim));
     }
 
     @Override
     public void onFlagUnset(Claim claim) {
-        UUID uuid = claim.getOwnerID();
-        if (uuid == null) return;
-        Player owner = Bukkit.getPlayer(uuid);
-        if (owner == null) {
-            return;
-        };
-        Location location = owner.getLocation();
-        if (!claim.contains(location, false, false)) {
-            return;
-        }
-        FlightManager.manageFlightLater(owner, 1, owner.getLocation());
+        // A tick later since the flag hasn't been removed yet
+        FlightManager.reconcileLater(Util.getPlayersIn(claim));
     }
 
     public static boolean letPlayerFly(Player player, Location location, Claim claim) {

@@ -17,16 +17,13 @@ public class FlagDef_OwnerMemberFly extends FlagDefinition {
 
     @Override
     public void onFlagSet(Claim claim, String param) {
-        for (Player p : Util.getPlayersIn(claim)) {
-            FlightManager.managePlayerFlight(p, null, p.getLocation());
-        }
+        FlightManager.reconcileLater(Util.getPlayersIn(claim));
     }
 
     @Override
     public void onFlagUnset(Claim claim) {
-        for (Player p : Util.getPlayersIn(claim)) {
-            FlightManager.manageFlightLater(p, 1, p.getLocation());
-        }
+        // A tick later since the flag hasn't been removed yet
+        FlightManager.reconcileLater(Util.getPlayersIn(claim));
     }
 
     public static boolean letPlayerFly(Player player, Location location, Claim claim) {
