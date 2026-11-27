@@ -6,20 +6,24 @@ import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import me.ryanhamshire.GPFlags.util.Util;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
-import me.ryanhamshire.GriefPrevention.PlayerData;
 import me.ryanhamshire.GriefPrevention.events.ClaimTransferEvent;
 import me.ryanhamshire.GriefPrevention.events.TrustChangedEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerToggleFlightEvent;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,14 +31,35 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.UUID;
 
+/**
+ * Manages flight given or taken away by flags.
+ * <p>
+ * Flight is reconciled against the player's current location rather than by comparing an old
+ * and a new location: every trigger just asks "what should this player's flight be right now?"
+ * Missed claim transitions are caught by {@link ClaimContextTracker}, which fires a
+ * {@link PlayerPostClaimBorderEvent} that lands here.
+ * </p>
+ * <p>
+ * GPFlags remembers (in the player's persistent data, so it survives relogs and restarts)
+ * whether the flight a player has was given by a flag. When a player ends up somewhere with no
+ * flight flags, flight is only taken away if GPFlags was the one that gave it, so flight from
+ * other plugins or other sources is left alone.
+ * </p>
+ */
 public class FlightManager implements Listener {
     private static final HashSet<Player> fallImmune = new HashSet<>();
+    private static NamespacedKey grantedKey;
+
+    private static NamespacedKey getGrantedKey() {
+        if (grantedKey == null) {
+            grantedKey = new NamespacedKey(GPFlags.getInstance(), "granted_flight");
+        }
+        return grantedKey;
+    }
 
     @EventHandler
     public void onClaimTransfer(ClaimTransferEvent event) {
-        for (Player player : Util.getPlayersIn(event.getClaim())) {
-            manageFlightLater(player, 1, player.getLocation());
-        }
+        reconcileLater(Util.getPlayersIn(event.getClaim()));
     }
 
     @EventHandler
@@ -43,11 +68,8 @@ public class FlightManager implements Listener {
 
         // If everyone, manage flight for everyone in affected claim(s)
         if (identifier.equalsIgnoreCase("public") || identifier.equalsIgnoreCase("all")) {
-            Collection<Claim> claims = event.getClaims();
-            for (Claim claim : claims) {
-                for (Player player : Util.getPlayersIn(claim)) {
-                    manageFlightLater(player, 1, player.getLocation());
-                }
+            for (Claim claim : event.getClaims()) {
+                reconcileLater(Util.getPlayersIn(claim));
             }
             return;
         }
@@ -57,7 +79,7 @@ public class FlightManager implements Listener {
             UUID uuid = UUID.fromString(identifier);
             Player player = Bukkit.getPlayer(uuid);
             if (player != null) {
-                manageFlightLater(player, 1, player.getLocation());
+                reconcileLater(player);
             }
             return;
         } catch (IllegalArgumentException ignored) {}
@@ -65,26 +87,30 @@ public class FlightManager implements Listener {
         // Otherwise, it's a permission
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (player.hasPermission(identifier)) {
-                manageFlightLater(player, 1, player.getLocation());
+                reconcileLater(player);
             }
         }
     }
 
     @EventHandler
     public void onEnterNewClaim(PlayerPostClaimBorderEvent event) {
-        // Get the status at their old location
-        Location locFrom = event.getLocFrom();
-        Location locTo = event.getLocTo();
-        Player player = event.getPlayer();
-        Claim fromClaim = event.getClaimFrom();
-        Claim toClaim = event.getClaimTo();
-        Boolean oldFlightAllowedStatus = gpfAllowsFlight(player, locFrom, fromClaim);
+        // A tick later so that teleports, respawns, and logins have finished moving the player
+        reconcileLater(event.getPlayer());
+    }
 
-        // A tick later, do a check on their new location and compare the two values
-        Bukkit.getScheduler().runTaskLater(GPFlags.getInstance(), () -> {
-            Boolean newFlightAllowedStatus = gpfAllowsFlight(player, locTo, toClaim);
-            managePlayerFlight(player, oldFlightAllowedStatus, newFlightAllowedStatus);
-        }, 1);
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    private void onFlyToggle(PlayerToggleFlightEvent event) {
+        // A player turning off flight from another plugin while standing in a flight claim
+        // should get flight back from the flag.
+        if (event.isFlying()) return;
+        reconcileLater(event.getPlayer());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    private void onGameModeChange(PlayerGameModeChangeEvent event) {
+        // Switching to survival resets allowFlight, so a player in a flight claim should get it back.
+        // Switching to creative/spectator hands flight over to the game mode.
+        reconcileLater(event.getPlayer());
     }
 
     @EventHandler
@@ -99,66 +125,86 @@ public class FlightManager implements Listener {
     }
 
     /**
-     * Runs a manage flight operation between the oldLocation now and the location that the player will be in ticks ticks
-     * @param player
-     * @param ticks Number of ticks to wait before calculating new flight allow status and managing flight.
-     * @param oldLocation If provided, will be able to avoid running a manage flight operation if the new status after ticks ticks is the same
+     * Runs {@link #reconcile(Player)} on the next tick
      */
-    public static void manageFlightLater(@NotNull Player player, int ticks, @Nullable Location oldLocation) {
-        if (oldLocation == null) {
-            Bukkit.getScheduler().runTaskLater(GPFlags.getInstance(), () -> {
-                managePlayerFlight(player, null, player.getLocation());
-            }, ticks);
-            return;
-        }
-        // if oldLocation is passed in, we want to calculate that value immediately
-        PlayerData playerData = GriefPrevention.instance.dataStore.getPlayerData(player.getUniqueId());
-        Claim oldClaim = GriefPrevention.instance.dataStore.getClaimAt(oldLocation, false, playerData.lastClaim);
-        Boolean oldFlightAllowedStatus = gpfAllowsFlight(player, oldLocation, oldClaim);
-        Bukkit.getScheduler().runTaskLater(GPFlags.getInstance(), () -> {
-            Claim newClaim = GriefPrevention.instance.dataStore.getClaimAt(player.getLocation(), false, playerData.lastClaim);
-            Boolean newFlightAllowedStatus = gpfAllowsFlight(player, player.getLocation(), newClaim);
-            managePlayerFlight(player, oldFlightAllowedStatus, newFlightAllowedStatus);
-        }, ticks);
+    public static void reconcileLater(@NotNull Player player) {
+        Bukkit.getScheduler().runTaskLater(GPFlags.getInstance(), () -> reconcile(player), 1);
     }
 
     /**
-     * Compares the flight permission of the player at the two locations and manages flight if different
-     * @param player
-     * @param oldLocation
-     * @param newLocation
+     * Runs {@link #reconcile(Player)} on the next tick for each player
      */
+    public static void reconcileLater(@NotNull Collection<Player> players) {
+        for (Player player : players) {
+            reconcileLater(player);
+        }
+    }
+
+    /**
+     * Sets the player's flight to whatever flags say it should be at their current location
+     */
+    public static void reconcile(@NotNull Player player) {
+        if (!player.isOnline()) return;
+        Location location = player.getLocation();
+        Claim claim = GriefPrevention.instance.dataStore.getClaimAt(location, false, null);
+        reconcile(player, location, claim);
+    }
+
+    /**
+     * Sets the player's flight to whatever flags say it should be at the location
+     * @param player The player
+     * @param location The player's current location
+     * @param claim The claim at location, or null if none
+     */
+    public static void reconcile(@NotNull Player player, @NotNull Location location, @Nullable Claim claim) {
+        // If the flight we gave is gone (another plugin took it, they changed game mode, etc.)
+        // or we're no longer responsible for their flight, forget that we gave it.
+        if (isGrantedByGpf(player) && (!player.getAllowFlight() || !gpfManagesFlight(player))) {
+            setGrantedByGpf(player, false);
+        }
+
+        Boolean flightAllowed = gpfAllowsFlight(player, location, claim);
+        if (Boolean.TRUE.equals(flightAllowed)) {
+            // Flags give flight here, so we're responsible for it from now on, even if the player
+            // already had flight from somewhere else when they arrived.
+            turnOnFlight(player);
+            setGrantedByGpf(player, true);
+            return;
+        }
+        if (Boolean.FALSE.equals(flightAllowed)) {
+            turnOffFlight(player);
+            setGrantedByGpf(player, false);
+            return;
+        }
+        // No flags say anything about flight here, so only take away flight that we gave
+        if (isGrantedByGpf(player)) {
+            turnOffFlight(player);
+            setGrantedByGpf(player, false);
+        }
+    }
+
+    /**
+     * @deprecated Use {@link #reconcile(Player)}. The old location is no longer needed.
+     */
+    @Deprecated
     public static void managePlayerFlight(@NotNull Player player, @Nullable Location oldLocation, @NotNull Location newLocation) {
-        PlayerData playerData = GriefPrevention.instance.dataStore.getPlayerData(player.getUniqueId());
-        Claim claim = GriefPrevention.instance.dataStore.getClaimAt(newLocation, false, playerData.lastClaim);
-
-        Boolean flightAllowedAtNewLocation = gpfAllowsFlight(player, newLocation, claim);
-        if (oldLocation == null) {
-            if (flightAllowedAtNewLocation == null) {
-                if (gpfManagesFlight(player)) {
-                    turnOffFlight(player);
-                }
-                return;
-            }
-            if (flightAllowedAtNewLocation) {
-                turnOnFlight(player);
-            } else {
-                turnOffFlight(player);
-            }
-            return;
-        }
-
-        Boolean flightAllowedAtOldLocation = gpfAllowsFlight(player, oldLocation, claim);
-        managePlayerFlight(player, flightAllowedAtOldLocation, flightAllowedAtNewLocation);
+        reconcile(player);
     }
 
+    /**
+     * @deprecated Use {@link #reconcileLater(Player)}. The old location is no longer needed.
+     */
+    @Deprecated
+    public static void manageFlightLater(@NotNull Player player, int ticks, @Nullable Location oldLocation) {
+        Bukkit.getScheduler().runTaskLater(GPFlags.getInstance(), () -> reconcile(player), ticks);
+    }
 
     /**
-     * Checks if a flag is the reason that the player allows flight at a location
+     * Checks what flags say about the player's flight at a location
      * @param player
      * @param location
      * @param claim Claim at location. Helpful in case a claim is being deleted
-     * @return
+     * @return true if a flag gives flight, false if a flag denies flight, null if no flag has an opinion
      */
     public static Boolean gpfAllowsFlight(Player player, Location location, Claim claim) {
         boolean manageFlight = gpfManagesFlight(player);
@@ -178,62 +224,24 @@ public class FlightManager implements Listener {
                 return true;
             }
         }
-        // we have no flight context set, so we need to compare the response for this method from both claims to determine if they should fly
         return null;
     }
 
     /**
-     * If there's a difference in the two booleans, will set the player's flight to the new status
-     * @param player
-     * @param flightAllowedAtOldLocation Null means no flags to indicate
-     * @param flightAllowedAtNewLocation Null means no flags to indicate
+     * @return If the player's current flight was given to them by a flag
      */
-    private static void managePlayerFlight(@NotNull Player player, @Nullable Boolean flightAllowedAtOldLocation, @Nullable Boolean flightAllowedAtNewLocation) {
-        if (flightAllowedAtNewLocation == null) {
-            if (Boolean.TRUE.equals(flightAllowedAtOldLocation)) {
-                if (gpfManagesFlight(player)) {
-                    turnOffFlight(player);
-                }
-            }
-            return;
-        }
-        if (flightAllowedAtNewLocation == Boolean.TRUE) {
-            if (gpfManagesFlight(player)) {
-                turnOnFlight(player);
-            }
-            return;
-        }
-        if (flightAllowedAtNewLocation == Boolean.FALSE) {
-            turnOffFlight(player);
-        }
+    public static boolean isGrantedByGpf(@NotNull Player player) {
+        PersistentDataContainer pdc = player.getPersistentDataContainer();
+        return pdc.has(getGrantedKey(), PersistentDataType.BYTE);
     }
 
-    @EventHandler
-    private void onFlyToggle(PlayerToggleFlightEvent event) {
-        if (event.isFlying()) return;
-        Player player = event.getPlayer();
-        Bukkit.getScheduler().runTaskLater(GPFlags.getInstance(), () -> {
-            Location location = player.getLocation();
-            Claim claim = GriefPrevention.instance.dataStore.getClaimAt(location, false, null);
-            boolean manageFlight = gpfManagesFlight(player);
-            if (!manageFlight) return;
-
-            if (FlagDef_OwnerMemberFly.letPlayerFly(player, location, claim)) {
-                turnOnFlight(player);
-                return;
-            }
-            if (FlagDef_OwnerFly.letPlayerFly(player, location, claim)) {
-                turnOnFlight(player);
-                return;
-            }
-            if (!FlagDef_NoFlight.letPlayerFly(player, location, claim)) {
-                return;
-            }
-            if (FlagDef_PermissionFly.letPlayerFly(player, location, claim)) {
-                turnOnFlight(player);
-                return;
-            }
-        }, 1);
+    private static void setGrantedByGpf(@NotNull Player player, boolean granted) {
+        PersistentDataContainer pdc = player.getPersistentDataContainer();
+        if (granted) {
+            pdc.set(getGrantedKey(), PersistentDataType.BYTE, (byte) 1);
+        } else {
+            pdc.remove(getGrantedKey());
+        }
     }
 
     private static void turnOffFlight(@NotNull Player player) {

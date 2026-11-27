@@ -11,6 +11,7 @@ import org.bukkit.entity.Vehicle;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDismountEvent;
 import org.bukkit.event.entity.EntityMountEvent;
 import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerBedLeaveEvent;
@@ -19,8 +20,8 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
-import org.bukkit.event.vehicle.VehicleExitEvent;
 
+import me.ryanhamshire.GPFlags.ClaimContextTracker;
 import me.ryanhamshire.GPFlags.FlightManager;
 import me.ryanhamshire.GPFlags.GPFlags;
 import me.ryanhamshire.GPFlags.event.PlayerPostClaimBorderEvent;
@@ -95,15 +96,16 @@ public class PlayerListener implements Listener {
         }
     }
     
-    @EventHandler(ignoreCancelled = true)
-    private void onExitVehicle(VehicleExitEvent event) {
-
-        // gets the player who is exiting the vehicle
-        if (!(event.getExited() instanceof Player)) return;
-        Player player = (Player) event.getExited();
-
-        // manage their flight
-        FlightManager.managePlayerFlight(player, null, player.getLocation());
+    /**
+     * Covers dismounting anything, including non-vehicle seats from plugins like GSit,
+     * which can place the player on the other side of a claim border without a movement event.
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    private void onDismount(EntityDismountEvent event) {
+        if (!(event.getEntity() instanceof Player)) return;
+        Player player = (Player) event.getEntity();
+        ClaimContextTracker.syncLater(player, 1);
+        FlightManager.reconcileLater(player);
     }
 
     @EventHandler
@@ -130,12 +132,9 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     private void onClaimDelete(ClaimDeletedEvent event) {
-        Claim claim = event.getClaim();
-        for (Player player : Util.getPlayersIn(claim)) {
-            Location location = player.getLocation();
-            PlayerPostClaimBorderEvent borderEvent = new PlayerPostClaimBorderEvent(player, claim, claim.parent, location, location);
-            Bukkit.getPluginManager().callEvent(borderEvent);
-        }
+        // The claim has already been removed from the datastore, so syncing will move
+        // anyone who was in it to whatever is underneath (parent claim or wilderness)
+        ClaimContextTracker.syncPlayersIn(event.getClaim());
     }
 
     @EventHandler
@@ -145,7 +144,7 @@ public class PlayerListener implements Listener {
         Claim cachedClaim = dataStore.getPlayerData(player.getUniqueId()).lastClaim;
         Claim claim = GriefPrevention.instance.dataStore.getClaimAt(spawn,false, cachedClaim);
         PlayerPostClaimBorderEvent borderEvent = new PlayerPostClaimBorderEvent(event.getPlayer(), null, claim, null, spawn);
-        Bukkit.getPluginManager().callEvent(borderEvent);
+        ClaimContextTracker.callPostEvent(borderEvent);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -155,7 +154,7 @@ public class PlayerListener implements Listener {
         Claim cachedClaim = dataStore.getPlayerData(player.getUniqueId()).lastClaim;
         Claim claim = GriefPrevention.instance.dataStore.getClaimAt(spawn,false, cachedClaim);
         PlayerPostClaimBorderEvent borderEvent = new PlayerPostClaimBorderEvent(event.getPlayer(), null, claim, null, spawn);
-        Bukkit.getPluginManager().callEvent(borderEvent);
+        ClaimContextTracker.callPostEvent(borderEvent);
     }
 
     public static boolean flagsPreventMovement(Location to, Location from, Player player) {
@@ -164,7 +163,9 @@ public class PlayerListener implements Listener {
 
     /**
      * Takes in a movement and calls PreClaimBorderEvent if needed.
-     * If the event was allowed, will call PostClaimBorderEvent
+     * If the event was allowed, will call PostClaimBorderEvent.
+     * Before that, if a player isn't where flags last knew them to be (they were moved without
+     * a movement event, e.g. by a piston), a PostClaimBorderEvent is fired for that missed transition.
      * @param locTo
      * @param locFrom
      * @param players
@@ -182,6 +183,12 @@ public class PlayerListener implements Listener {
         Location locToAdj = Util.getInBoundsLocation(locTo);
         Claim claimFrom = dataStore.getClaimAt(locFromAdj, false, null);
         Claim claimTo = dataStore.getClaimAt(locToAdj, false, null);
+
+        // Report any claim change that happened without us seeing it
+        for (Player player : players) {
+            ClaimContextTracker.catchUp(player, claimFrom, locFromAdj);
+        }
+
         if (claimTo == claimFrom) {
             // If both claims exist and are the same, there's no context change
             if (claimTo != null) {
@@ -204,7 +211,7 @@ public class PlayerListener implements Listener {
 
         // Now that we know everyone is allowed entry, lets call PlayerPostClaimBorderEvent
         for (PlayerPreClaimBorderEvent event : events) {
-            Bukkit.getPluginManager().callEvent(new PlayerPostClaimBorderEvent(event));
+            ClaimContextTracker.callPostEvent(new PlayerPostClaimBorderEvent(event));
         }
         return false;
     }
