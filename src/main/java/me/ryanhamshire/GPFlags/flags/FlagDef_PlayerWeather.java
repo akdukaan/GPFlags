@@ -22,6 +22,11 @@ public class FlagDef_PlayerWeather extends PlayerMovementFlagDefinition implemen
     }
 
     @Override
+    public FlagParameterType getParameterType() {
+        return FlagParameterType.WEATHER;
+    }
+
+    @Override
     public void onChangeClaim(Player player, Location from, Location to, Claim claimFrom, Claim claimTo, @Nullable Flag flagFrom, @Nullable Flag flagTo) {
         // Reset the weather if moving from enabled to disabled
         if (flagTo == null && flagFrom != null) {

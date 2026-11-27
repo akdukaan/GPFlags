@@ -6,8 +6,6 @@ import org.bukkit.event.EventHandler;
 import com.magmaguy.elitemobs.api.EliteMobSpawnEvent;
 
 
-import java.util.Arrays;
-import java.util.List;
 
 public class FlagDef_NoEliteMobSpawns extends FlagDefinition {
 

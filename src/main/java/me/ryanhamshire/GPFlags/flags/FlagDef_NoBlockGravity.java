@@ -5,8 +5,6 @@ import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 
-import java.util.Arrays;
-import java.util.List;
 
 public class FlagDef_NoBlockGravity extends FlagDefinition {
 

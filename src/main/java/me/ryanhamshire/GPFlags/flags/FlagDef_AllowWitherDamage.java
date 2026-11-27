@@ -1,8 +1,6 @@
 package me.ryanhamshire.GPFlags.flags;
 
 import me.ryanhamshire.GPFlags.*;
-import org.bukkit.Bukkit;
-import org.bukkit.damage.DamageSource;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Wither;
@@ -12,9 +10,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Level;
 
 public class FlagDef_AllowWitherDamage extends FlagDefinition {
 

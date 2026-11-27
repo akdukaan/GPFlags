@@ -21,6 +21,11 @@ public class FlagDef_ExitPlayerCommand extends PlayerMovementFlagDefinition {
     }
 
     @Override
+    public FlagParameterType getParameterType() {
+        return FlagParameterType.COMMANDS;
+    }
+
+    @Override
     public void onChangeClaim(Player player, Location lastLocation, Location to, Claim claimFrom, Claim claimTo, @Nullable Flag flagFrom, @Nullable Flag flagTo) {
         if (flagFrom == null) return;
         // moving to different claim with the same params

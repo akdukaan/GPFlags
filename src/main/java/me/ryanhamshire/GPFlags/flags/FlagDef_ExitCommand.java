@@ -3,8 +3,6 @@ package me.ryanhamshire.GPFlags.flags;
 import me.ryanhamshire.GPFlags.*;
 import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import me.ryanhamshire.GriefPrevention.Claim;
-import me.ryanhamshire.GriefPrevention.GriefPrevention;
-import me.ryanhamshire.GriefPrevention.PlayerData;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
@@ -15,6 +13,11 @@ public class FlagDef_ExitCommand extends PlayerMovementFlagDefinition {
 
     public FlagDef_ExitCommand(FlagManager manager, GPFlags plugin) {
         super(manager, plugin);
+    }
+
+    @Override
+    public FlagParameterType getParameterType() {
+        return FlagParameterType.COMMANDS;
     }
 
     @Override

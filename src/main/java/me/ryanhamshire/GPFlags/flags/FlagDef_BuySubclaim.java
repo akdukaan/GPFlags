@@ -4,12 +4,9 @@ import me.ryanhamshire.GPFlags.*;
 import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.ClaimPermission;
-import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -19,6 +16,11 @@ public class FlagDef_BuySubclaim extends PlayerMovementFlagDefinition {
 
     public FlagDef_BuySubclaim(FlagManager manager, GPFlags plugin) {
         super(manager, plugin);
+    }
+
+    @Override
+    public FlagParameterType getParameterType() {
+        return FlagParameterType.NUMBER;
     }
 
     @Override

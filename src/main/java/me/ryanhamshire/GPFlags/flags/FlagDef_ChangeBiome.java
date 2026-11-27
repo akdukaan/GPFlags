@@ -1,6 +1,7 @@
 package me.ryanhamshire.GPFlags.flags;
 
 import me.ryanhamshire.GPFlags.*;
+import me.ryanhamshire.GPFlags.util.BiomeUpdates;
 import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import me.ryanhamshire.GPFlags.util.Util;
 import me.ryanhamshire.GriefPrevention.Claim;
@@ -8,7 +9,6 @@ import me.ryanhamshire.GriefPrevention.events.ClaimDeletedEvent;
 import org.bukkit.*;
 import org.bukkit.block.Biome;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -18,11 +18,19 @@ import java.util.Locale;
 
 public class FlagDef_ChangeBiome extends FlagDefinition {
 
+    private final BiomeUpdates biomeUpdates;
+
     public FlagDef_ChangeBiome(FlagManager manager, GPFlags plugin) {
         super(manager, plugin);
+        biomeUpdates = new BiomeUpdates(plugin);
     }
 
-    private void changeBiome(Claim claim, Biome biome) {
+    @Override
+    public FlagParameterType getParameterType() {
+        return FlagParameterType.BIOME;
+    }
+
+    private void changeBiome(CommandSender sender, Claim claim, Biome biome) {
         Location greater = claim.getGreaterBoundaryCorner();
         Location lesser = claim.getLesserBoundaryCorner();
         int lX = lesser.getBlockX();
@@ -32,57 +40,55 @@ public class FlagDef_ChangeBiome extends FlagDefinition {
         int gY = Util.getMaxHeight(greater) - 1;
         int gZ = greater.getBlockZ();
         World world = lesser.getWorld();
+        long totalChunks = ((long) (gX >> 4) - (lX >> 4) + 1)
+                * ((long) (gZ >> 4) - (lZ >> 4) + 1);
+        long[] completedChunks = {0};
+        String biomeName = getBiomeName(biome.getKey());
+        MessagingUtil.sendMessage(sender, "<yellow>", Messages.ChangeBiomeStarted,
+                biomeName, Long.toString(totalChunks));
         int ticks = 0;
-        for (int x = lX; x <= gX; x++) {
-            // We don't loop over y because then all chunks would get loaded in the same runnable
-            // and it's better to split that up
-            int finalX = x;
-            BukkitRunnable runnable = new BukkitRunnable() {
-                @Override
-                public void run() {
-                    for (int z = lZ; z <= gZ; z++) {
-                        Location loadLoc = new Location(world, finalX, 100, z);
-                        Chunk loadChunk = loadLoc.getChunk();
-                        if (!(loadChunk.isLoaded())) {
-                            loadChunk.load();
+        for (int chunkX = lX >> 4; chunkX <= gX >> 4; chunkX++) {
+            for (int chunkZ = lZ >> 4; chunkZ <= gZ >> 4; chunkZ++) {
+                int finalChunkX = chunkX;
+                int finalChunkZ = chunkZ;
+                // Finish each chunk before resending it, spreading large claims over multiple ticks.
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        world.getChunkAt(finalChunkX, finalChunkZ).load();
+                        int minX = Math.max(lX, finalChunkX << 4);
+                        int maxX = Math.min(gX, (finalChunkX << 4) + 15);
+                        int minZ = Math.max(lZ, finalChunkZ << 4);
+                        int maxZ = Math.min(gZ, (finalChunkZ << 4) + 15);
+                        for (int x = minX; x <= maxX; x++) {
+                            for (int z = minZ; z <= maxZ; z++) {
+                                for (int y = lY; y <= gY; y++) {
+                                    world.setBiome(x, y, z, biome);
+                                }
+                            }
                         }
-                        for (int y = lY; y <= gY; y++) {
-                            world.setBiome(finalX, y, z, biome);
+                        // Resend to everyone viewing this chunk, even when the owner is offline.
+                        biomeUpdates.send(world, finalChunkX, finalChunkZ);
+                        long completed = ++completedChunks[0];
+                        if (completed == totalChunks) {
+                            MessagingUtil.sendMessage(sender, "<green>", Messages.ChangeBiomeCompleted,
+                                    biomeName, Long.toString(totalChunks));
+                        } else if (completed % 20 == 0) {
+                            // One chunk runs per tick, so report roughly once per second.
+                            MessagingUtil.sendMessage(sender, "<yellow>", Messages.ChangeBiomeProgress,
+                                    Long.toString(completed * 100 / totalChunks),
+                                    Long.toString(completed), Long.toString(totalChunks));
                         }
                     }
-                }
-            };
-            runnable.runTaskLater(GPFlags.getInstance(), ticks++);
-        }
-        BukkitRunnable runnable = new BukkitRunnable() {
-            @Override
-            public void run() {
-                refreshChunks(claim);
-            }
-        };
-        runnable.runTaskLater(GPFlags.getInstance(), ticks);
-    }
-
-    private void refreshChunks(Claim claim) {
-        int view = Bukkit.getServer().getViewDistance();
-        Player player = Bukkit.getPlayer(claim.getOwnerName());
-        if (player != null && player.isOnline()) {
-            Location loc = player.getLocation();
-            if (claim.contains(loc, true, true)) {
-                int X = loc.getChunk().getX();
-                int Z = loc.getChunk().getZ();
-                for (int x = X - view; x <= (X + view); x++) {
-                    for (int z = Z - view; z <= (Z + view); z++) {
-                        player.getWorld().refreshChunk(x, z);
-                    }
-                }
+                }.runTaskLater(GPFlags.getInstance(), ticks++);
             }
         }
     }
 
     @SuppressWarnings("deprecation")
     public boolean changeBiome(CommandSender sender, Claim claim, String biome) {
-        Biome b = Registry.BIOME.get(NamespacedKey.minecraft(biome.toLowerCase(Locale.ROOT).replace(" ", "_")));
+        NamespacedKey key = NamespacedKey.fromString(biome.toLowerCase(Locale.ROOT).replace(" ", "_"));
+        Biome b = key == null ? null : Registry.BIOME.get(key);
         if (b == null) {
             MessagingUtil.sendMessage(sender, "<red>Invalid biome: <aqua>" + biome);
             return false;
@@ -92,13 +98,18 @@ public class FlagDef_ChangeBiome extends FlagDefinition {
             MessagingUtil.sendMessage(sender, "<red>World does not exist.");
             return false;
         }
-        String biomeKey = b.getKey().getKey();
+        String biomeKey = getBiomeName(b.getKey());
         if (!sender.hasPermission("gpflags.flag.changebiome." + biomeKey)) {
             MessagingUtil.sendMessage(sender, "<red>You do not have permissions for the biome <aqua>" + biomeKey + " <red>.");
             return false;
         }
-        changeBiome(claim, b);
+        changeBiome(sender, claim, b);
         return true;
+    }
+
+    // Keep existing vanilla names and permission nodes; custom biomes need their namespace.
+    static String getBiomeName(NamespacedKey key) {
+        return NamespacedKey.MINECRAFT.equals(key.getNamespace()) ? key.getKey() : key.toString();
     }
 
     @EventHandler

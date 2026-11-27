@@ -6,7 +6,6 @@ import me.ryanhamshire.GPFlags.GPFlags;
 import me.ryanhamshire.GPFlags.MessageSpecifier;
 import me.ryanhamshire.GPFlags.Messages;
 import me.ryanhamshire.GPFlags.SetFlagResult;
-import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -15,8 +14,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 
-import java.util.Arrays;
-import java.util.List;
 
 public class FlagDef_NetherPortalConsoleCommand extends FlagDefinition {
 
@@ -40,6 +37,11 @@ public class FlagDef_NetherPortalConsoleCommand extends FlagDefinition {
         for (String commandLine : commandLines) {
             Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), commandLine);
         }
+    }
+
+    @Override
+    public FlagParameterType getParameterType() {
+        return FlagParameterType.COMMANDS;
     }
 
     @Override

@@ -8,8 +8,6 @@ import me.ryanhamshire.GPFlags.Messages;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerItemDamageEvent;
 
-import java.util.Arrays;
-import java.util.List;
 
 public class FlagDef_NoItemDamage extends FlagDefinition {
 

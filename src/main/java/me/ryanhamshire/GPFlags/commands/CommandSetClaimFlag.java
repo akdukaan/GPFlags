@@ -34,7 +34,7 @@ public class CommandSetClaimFlag implements TabExecutor {
         Player player = ((Player) commandSender);
 
         // Check that they provided a flag
-        if (args.length < 1) return false;
+        if (args.length < 1) return new CommandClaimFlags().onCommand(commandSender, command, s, args);
         String flagName = args[0];
 
         // If they provided a nonexisting flag, show them the options
@@ -130,7 +130,7 @@ public class CommandSetClaimFlag implements TabExecutor {
     public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
         if (args.length == 1) {
             return Util.flagTab(commandSender, args[0]);
-        } else if (args.length == 2) {
+        } else if (args.length >= 2) {
             return Util.paramTab(commandSender, args);
         }
         return Collections.emptyList();

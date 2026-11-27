@@ -6,21 +6,22 @@ import me.ryanhamshire.GPFlags.GPFlags;
 import me.ryanhamshire.GPFlags.MessageSpecifier;
 import me.ryanhamshire.GPFlags.Messages;
 import me.ryanhamshire.GPFlags.SetFlagResult;
-import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
 public class FlagDef_HealthRegen extends TimedPlayerFlagDefinition {
 
     public FlagDef_HealthRegen(FlagManager manager, GPFlags plugin) {
         super(manager, plugin);
+    }
+
+    @Override
+    public FlagParameterType getParameterType() {
+        return FlagParameterType.NUMBER;
     }
 
     @Override

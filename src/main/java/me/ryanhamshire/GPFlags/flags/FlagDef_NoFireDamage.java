@@ -11,8 +11,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockIgniteEvent;
 
-import java.util.Arrays;
-import java.util.List;
 
 public class FlagDef_NoFireDamage extends FlagDefinition {
 

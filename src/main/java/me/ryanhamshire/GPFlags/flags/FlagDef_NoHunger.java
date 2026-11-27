@@ -12,8 +12,6 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 
-import java.util.Arrays;
-import java.util.List;
 
 public class FlagDef_NoHunger extends FlagDefinition {
 

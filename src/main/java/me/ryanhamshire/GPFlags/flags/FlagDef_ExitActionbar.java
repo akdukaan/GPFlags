@@ -3,7 +3,6 @@ package me.ryanhamshire.GPFlags.flags;
 import me.ryanhamshire.GPFlags.*;
 import me.ryanhamshire.GPFlags.util.MessagingUtil;
 import me.ryanhamshire.GriefPrevention.Claim;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -13,6 +12,11 @@ public class FlagDef_ExitActionbar extends PlayerMovementFlagDefinition {
 
     public FlagDef_ExitActionbar(FlagManager manager, GPFlags plugin) {
         super(manager, plugin);
+    }
+
+    @Override
+    public FlagParameterType getParameterType() {
+        return FlagParameterType.TEXT;
     }
 
     @Override

@@ -15,8 +15,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
-import java.util.Arrays;
-import java.util.List;
 
 public class FlagDef_CommandBlackList extends CommandListFlagDefinition {
 
@@ -38,6 +36,11 @@ public class FlagDef_CommandBlackList extends CommandListFlagDefinition {
             event.setCancelled(true);
             MessagingUtil.sendMessage(player, TextMode.Err, Messages.CommandBlockedHere);
         }
+    }
+
+    @Override
+    public FlagParameterType getParameterType() {
+        return FlagParameterType.COMMANDS;
     }
 
     @Override

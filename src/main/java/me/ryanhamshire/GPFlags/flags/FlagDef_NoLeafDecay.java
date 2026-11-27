@@ -10,8 +10,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.LeavesDecayEvent;
 
-import java.util.Arrays;
-import java.util.List;
 
 public class FlagDef_NoLeafDecay extends FlagDefinition {
 

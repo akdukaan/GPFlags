@@ -21,9 +21,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 public class FlagDef_NoOpenDoors extends FlagDefinition {
 
@@ -73,6 +70,11 @@ public class FlagDef_NoOpenDoors extends FlagDefinition {
                 }
             }
         }
+    }
+
+    @Override
+    public FlagParameterType getParameterType() {
+        return FlagParameterType.DOOR_TYPES;
     }
 
     @Override

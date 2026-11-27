@@ -16,9 +16,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -55,6 +52,11 @@ public class FlagDef_RespawnLocation extends FlagDefinition {
             event.setRespawnLocation(respawnLocation);
             this.respawnMap.remove(player.getUniqueId());
         }
+    }
+
+    @Override
+    public FlagParameterType getParameterType() {
+        return FlagParameterType.LOCATION;
     }
 
     @Override

@@ -62,7 +62,7 @@ public class CommandSetServerFlag implements TabExecutor {
     public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
         if (args.length == 1) {
             return Util.flagTab(commandSender, args[0]);
-        } else if (args.length == 2) {
+        } else if (args.length >= 2) {
             return Util.paramTab(commandSender, args);
         }
         return Collections.emptyList();

@@ -24,6 +24,11 @@ public class FlagDef_ExitMessage extends PlayerMovementFlagDefinition {
     }
 
     @Override
+    public FlagParameterType getParameterType() {
+        return FlagParameterType.TEXT;
+    }
+
+    @Override
     public void onChangeClaim(Player player, Location lastLocation, Location to, Claim claimFrom, Claim claimTo, @Nullable Flag flagFrom, @Nullable Flag flagTo) {
         if (flagFrom == null) return;
         // moving to different claim with the same message

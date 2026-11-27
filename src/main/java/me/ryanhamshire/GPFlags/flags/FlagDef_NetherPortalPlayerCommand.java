@@ -13,8 +13,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 
-import java.util.Arrays;
-import java.util.List;
 
 public class FlagDef_NetherPortalPlayerCommand extends FlagDefinition {
 
@@ -35,6 +33,11 @@ public class FlagDef_NetherPortalPlayerCommand extends FlagDefinition {
 
         event.setCancelled(true);
         player.performCommand(flag.parameters);
+    }
+
+    @Override
+    public FlagParameterType getParameterType() {
+        return FlagParameterType.COMMANDS;
     }
 
     @Override
